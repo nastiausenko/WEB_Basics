@@ -56,19 +56,26 @@
       socket.on('chat history', function (history) {
         $('#messages').empty();
         history.forEach(msg => {
-          $('#messages').append($('<li>').text(msg));
+          const li = $('<li>').text(msg.text);
+          if (msg.type === 'system') {
+            li.addClass('system-message');
+          } else {
+            li.addClass('user-message');
+          }
+          $('#messages').append(li);
         });
       });
 
       socket.on('chat message', function (msg) {
         const li = $('<li>').text(msg.text);
-
         if (msg.type === 'system') {
           li.addClass('system-message');
+        } else {
+          li.addClass('user-message');
         }
-
         $('#messages').append(li);
       });
+
 
       socket.on('roomData', function ({ room, users }) {
         $('#roomName').text(room);

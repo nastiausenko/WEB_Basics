@@ -41,22 +41,33 @@ io.on('connection', (socket) => {
 
 
     if (isFirstJoin) {
-        socket.emit('chat message', { text: `Привіт, ${username}!`, type: 'system' });
-        socket.broadcast.to(room).emit('chat message', { text: `${username} приєднався`, type: 'system' });
+        const welcomeMsg = { text: `Привіт, ${username}!`, type: 'system' };
+        const joinMsg = { text: `${username} приєднався`, type: 'system' };
+
+        chatManager.addMessage(room, joinMsg);
+
+        socket.emit('chat message', welcomeMsg);
+        socket.broadcast.to(room).emit('chat message', joinMsg);
     }
 
+
     socket.on('chat message', (msg) => {
-        const fullMsg = `${username}: ${msg}`;
+        const fullMsg = { text: `${username}: ${msg}`, type: 'user' };
         chatManager.addMessage(room, fullMsg);
-        io.to(room).emit('chat message', { text: fullMsg, type: 'user' });
+        io.to(room).emit('chat message', fullMsg);
     });
+
 
     socket.on('disconnect', () => {
         chatManager.removeUserSocket(username, room, socket.id);
 
         if (!socket.handshake.session.username) {
             chatManager.forceRemoveUser(username, room);
-            io.to(room).emit('chat message', { text: `${username} покинув кімнату`, type: 'system' });
+
+            const leaveMsg = { text: `${username} покинув кімнату`, type: 'system' };
+            chatManager.addMessage(room, leaveMsg);
+
+            io.to(room).emit('chat message', leaveMsg);
             io.to(room).emit('roomData', { room, users: chatManager.getUsers(room) });
         }
     });

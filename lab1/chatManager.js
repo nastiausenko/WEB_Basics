@@ -18,24 +18,17 @@ module.exports = {
         return isNewUser;
     },
 
-
     removeUserSocket(username, room, socketId) {
         if (!rooms[room] || !rooms[room].userSockets[username]) return false;
-
         rooms[room].userSockets[username] = rooms[room].userSockets[username].filter(id => id !== socketId);
-
         return rooms[room].userSockets[username].length > 0;
     },
 
     forceRemoveUser(username, room) {
         if (!rooms[room]) return;
-
         delete rooms[room].userSockets[username];
         rooms[room].users = rooms[room].users.filter(u => u !== username);
-
-        if (rooms[room].users.length === 0) {
-            delete rooms[room];
-        }
+        if (rooms[room].users.length === 0) delete rooms[room];
     },
 
     addMessage(room, message) {
