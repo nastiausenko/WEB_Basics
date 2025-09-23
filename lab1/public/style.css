@@ -4,7 +4,7 @@ body {
   padding: 0;
   display: flex;
   height: 100vh;
-  background-color: #EEEFE0;
+  background-color: #F8FAFC;
 }
 
 #joinForm {
@@ -19,14 +19,13 @@ body {
 }
 
 #sidebar {
-  width: 250px;
-  background: #819A91;
+  width: 17%;
+  background: #9AA6B2;
   padding: 15px;
-  border-right: 1px solid #f00000;
 }
 
 #mainChat {
-  background-color: #EEEFE0;
+  background-color: #F8FAFC;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -41,27 +40,61 @@ body {
 }
 
 #messages li {
-  padding: 5px 10px;
-  margin-bottom: 2px;
+  padding: 10px 10px;
+  margin-bottom: 5px;
+  border-radius: 50%;
 }
 
-/* Звичайні повідомлення */
 #messages li.user-message {
-  background-color: #D1D8BE;
+  background-color: #D9EAFD;
   border-radius: 4px;
 }
 
-/* Системні повідомлення */
+#messages {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
 #messages li.system-message {
-  background-color: #D1D8BE;
+  display: table;            
+  background-color: #e6e9ee;
   color: #000;
-  font-weight: bold;
-  text-align: center;
   font-style: italic;
-  border-radius: 4px;
+  text-align: center;
+  padding: 6px 12px;
+  margin: 8px auto;          
+  border-radius: 20px;        
 }
 
-/* Форми */
+#messages li.user-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 60%;        
+  margin: 5px;             
+  padding: 8px 12px;
+  border-radius: 12px;
+  word-wrap: break-word;
+}
+
+#messages li.user-message.left {
+  align-self: flex-start;
+  background-color: #D9EAFD;
+}
+
+#messages li.user-message.right {
+  align-self: flex-end;
+  background-color: #B2F5EA;
+}
+
+#messages li.user-message .username {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+
 form {
   background: #000;
   padding: 3px;

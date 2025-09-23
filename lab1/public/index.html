@@ -67,14 +67,22 @@
       });
 
       socket.on('chat message', function (msg) {
-        const li = $('<li>').text(msg.text);
-        if (msg.type === 'system') {
-          li.addClass('system-message');
+        const li = $('<li>').addClass('user-message');
+
+        if (msg.username === currentUser) { 
+          li.addClass('right');
         } else {
-          li.addClass('user-message');
+          li.addClass('left');
         }
+
+        li.append($('<div>').addClass('username').text(msg.username));
+        
+        li.append($('<div>').addClass('text').text(msg.text));
+
         $('#messages').append(li);
+        $('#messages').scrollTop($('#messages')[0].scrollHeight); 
       });
+
 
 
       socket.on('roomData', function ({ room, users }) {
