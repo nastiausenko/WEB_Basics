@@ -32,68 +32,48 @@ body {
 }
 
 #messages {
-  list-style-type: none;
+  list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 10px;
   flex: 1;
   overflow-y: auto;
-}
-
-#messages li {
-  padding: 10px 10px;
-  margin-bottom: 5px;
-  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
 }
 
 #messages li.user-message {
+  display: inline-block;      
+  max-width: 60%;              
+  padding: 8px 50px 8px 12px;
+  margin: 5px 0;
   background-color: #D9EAFD;
-  border-radius: 4px;
-}
-
-#messages {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  flex: 1;
-  overflow-y: auto;
+  border-radius: 12px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  align-self: flex-start;      
+  text-align: left;
 }
 
 #messages li.system-message {
-  display: table;            
+  display: table;
   background-color: #e6e9ee;
   color: #000;
   font-style: italic;
   text-align: center;
   padding: 6px 12px;
-  margin: 8px auto;          
-  border-radius: 20px;        
+  margin: 8px auto;
+  border-radius: 20px;
 }
 
-#messages li.user-message {
-  display: flex;
-  flex-direction: column;
-  max-width: 60%;        
-  margin: 5px;             
-  padding: 8px 12px;
-  border-radius: 12px;
-  word-wrap: break-word;
-}
-
-#messages li.user-message.left {
-  align-self: flex-start;
-  background-color: #D9EAFD;
-}
-
-#messages li.user-message.right {
-  align-self: flex-end;
-  background-color: #B2F5EA;
-}
-
-#messages li.user-message .username {
+.msg-name {
   font-weight: bold;
   margin-bottom: 4px;
+  margin-left: 2px;
 }
 
+.msg-text {
+  white-space: pre-wrap;
+}
 
 form {
   background: #000;

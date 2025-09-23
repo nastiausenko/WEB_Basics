@@ -36,6 +36,43 @@
   <script>
     $(function () {
       var socket = io();
+      function usernameToBlueShade(username) {
+        const base = { r: 217, g: 234, b: 253 };
+
+        let hash = 0;
+        for (let i = 0; i < username.length; i++) {
+          hash = username.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        const shift = (hash % 61) - 30;
+
+        const r = Math.min(255, Math.max(0, base.r + shift));
+        const g = Math.min(255, Math.max(0, base.g + shift));
+        const b = Math.min(255, Math.max(0, base.b + shift));
+
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      function addMessage(msg) {
+        const li = $('<li>').addClass(msg.type === 'system' ? 'system-message' : 'user-message');
+        if (msg.type === 'user') {
+          const splitIndex = msg.text.indexOf(':');
+          const username = msg.text.substring(0, splitIndex);
+          const messageText = msg.text.substring(splitIndex + 1);
+
+          const name = $('<div>').addClass('msg-name').text(username);
+          const text = $('<div>').addClass('msg-text').text(messageText);
+
+          li.append(name).append(text);
+
+          li.css('background-color', usernameToBlueShade(username));
+        } else {
+          li.text(msg.text);
+        }
+        $('#messages').append(li);
+        $('#messages').scrollTop($('#messages')[0].scrollHeight);
+      }
+
 
       socket.on("connect", function () {
         $('#joinForm').hide();
@@ -54,30 +91,14 @@
         });
       });
 
-
       socket.on('chat history', function (history) {
         $('#messages').empty();
-        history.forEach(msg => {
-          const li = $('<li>').text(msg.text);
-          if (msg.type === 'system') {
-            li.addClass('system-message');
-          } else {
-            li.addClass('user-message');
-          }
-          $('#messages').append(li);
-        });
+        history.forEach(msg => addMessage(msg));
       });
 
       socket.on('chat message', function (msg) {
-        const li = $('<li>').text(msg.text);
-        if (msg.type === 'system') {
-          li.addClass('system-message');
-        } else {
-          li.addClass('user-message');
-        }
-        $('#messages').append(li);
+        addMessage(msg);
       });
-
 
       socket.on('roomData', function ({ room, users }) {
         $('#roomName').text(room);
@@ -86,11 +107,11 @@
           $('#users').append($('<li>').text(u));
         });
       });
-    });
 
-    socket.on("forceLogout", function () {
-      alert("Немає сесії, увійди заново");
-      window.location.href = "/login";
+      socket.on("forceLogout", function () {
+        alert("Немає сесії, увійди заново");
+        window.location.href = "/login";
+      });
     });
   </script>
 </body>
