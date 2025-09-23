@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Логін</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <div class="login-container">
+    <h2>Вхід у чат</h2>
+    <form id="loginForm">
+      <input name="username" placeholder="Твоє ім'я" required>
+      <span id="usernameError" class="error"></span>
+      <input name="room" placeholder="Назва кімнати" required>
+      <button type="submit">Увійти</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const usernameError = document.getElementById('usernameError');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      usernameError.textContent = '';
+
+      const formData = new FormData(form);
+      const data = new URLSearchParams(formData);
+
+      const response = await fetch('/login', {
+        method: 'POST',
+        body: data
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        window.location.href = '/';
+      } else {
+        usernameError.textContent = result.message;
+      }
+    });
+  </script>
+</body>
+</html>

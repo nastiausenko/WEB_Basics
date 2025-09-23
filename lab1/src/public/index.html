@@ -17,9 +17,11 @@
 
   <div id="chatContainer" style="display:none;">
     <div id="sidebar">
-      <h3>Кімната: <span id="roomName"></span></h3>
-      <h4>Користувачі:</h4>
-      <ul id="users"></ul>
+      <div class="room-bubble">
+        <h3>Кімната: <span id="roomName"></span></h3>
+        <h4>Користувачі:</h4>
+        <ul id="users"></ul>
+      </div>
       <button id="logoutBtn">Вийти</button>
     </div>
     <div id="mainChat">
@@ -80,7 +82,10 @@
       });
 
       $('#chatForm').submit(function () {
-        socket.emit('chat message', $('#m').val());
+        const message = $('#m').val().trim();
+        if (!message) return false; 
+
+        socket.emit('chat message', message);
         $('#m').val('');
         return false;
       });

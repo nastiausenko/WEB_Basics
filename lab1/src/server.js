@@ -22,7 +22,7 @@ io.use(sharedSession(sessionMiddleware, { autoSave: true }));
 app.set('io', io);
 
 require('./routes')(app);
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '/public')));
 
 io.on('connection', (socket) => {
     const sess = socket.handshake.session;
@@ -59,7 +59,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        chatManager.removeUserSocket(username, room, socket.id);
+        setTimeout(() => {
+            const stillConnected = chatManager.removeUserSocket(username, room, socket.id);
+
+            if (!stillConnected) {
+                chatManager.forceRemoveUser(username, room);
+
+                const leaveMsg = { text: `${username} покинув кімнату`, type: 'system' };
+                chatManager.addMessage(room, leaveMsg);
+
+                io.to(room).emit('chat message', leaveMsg);
+                io.to(room).emit('roomData', { room, users: chatManager.getUsers(room) });
+            }
+        }, 1000); 
     });
 });
 
