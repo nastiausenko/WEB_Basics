@@ -33,6 +33,8 @@ io.on('connection', (socket) => {
 
     const { username, room } = sess;
 
+    socket.emit('currentUser', username);
+
     const isFirstJoin = chatManager.addUserSocket(username, room, socket.id);
 
     socket.join(room);

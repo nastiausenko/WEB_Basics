@@ -2,32 +2,25 @@
 <html>
 
 <head>
-  <title>Чат з кімнатами</title>
+  <title>Чат</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <div id="joinForm">
-    <form method="POST" action="/login">
-      <input name="username" placeholder="Твоє ім'я" required>
-      <input name="room" placeholder="Назва кімнати" required>
-      <button type="submit">Приєднатися</button>
-    </form>
-  </div>
-
   <div id="chatContainer" style="display:none;">
     <div id="sidebar">
       <div class="room-bubble">
         <h3>Кімната: <span id="roomName"></span></h3>
         <h4>Користувачі:</h4>
         <ul id="users"></ul>
+        <div id="currentUser"></div>
       </div>
       <button id="logoutBtn">Вийти</button>
     </div>
     <div id="mainChat">
       <ul id="messages"></ul>
       <form id="chatForm" action="">
-        <input id="m" autocomplete="off" placeholder="Введи повідомлення..." />
+        <input id="m" autocomplete="off" placeholder="Введіть повідомлення..." />
         <button>Send</button>
       </form>
     </div>
@@ -38,6 +31,8 @@
   <script>
     $(function () {
       var socket = io();
+      let currentUser = '';
+
       function usernameToBlueShade(username) {
         const base = { r: 217, g: 234, b: 253 };
 
@@ -47,11 +42,9 @@
         }
 
         const shift = (hash % 61) - 30;
-
         const r = Math.min(255, Math.max(0, base.r + shift));
         const g = Math.min(255, Math.max(0, base.g + shift));
         const b = Math.min(255, Math.max(0, base.b + shift));
-
         return `rgb(${r}, ${g}, ${b})`;
       }
 
@@ -75,15 +68,18 @@
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
       }
 
+      socket.on('currentUser', (username) => {
+        currentUser = username;
+      });
 
-      socket.on("connect", function () {
+      socket.on('connect', function () {
         $('#joinForm').hide();
         $('#chatContainer').show();
       });
 
       $('#chatForm').submit(function () {
         const message = $('#m').val().trim();
-        if (!message) return false; 
+        if (!message) return false;
 
         socket.emit('chat message', message);
         $('#m').val('');
@@ -105,20 +101,23 @@
         addMessage(msg);
       });
 
-      socket.on('roomData', function ({ room, users }) {
+      socket.on('roomData', ({ room, users }) => {
         $('#roomName').text(room);
+        document.title = room;
+
         $('#users').empty();
         users.forEach(u => {
-          $('#users').append($('<li>').text(u));
+          const li = $('<li>').text(u);
+          if (u === currentUser) li.css('font-weight', 'bold');
+          $('#users').append(li);
         });
       });
 
-      socket.on("forceLogout", function () {
+      socket.on('forceLogout', function () {
         alert("Немає сесії, увійди заново");
         window.location.href = "/login";
       });
     });
   </script>
 </body>
-
 </html>
