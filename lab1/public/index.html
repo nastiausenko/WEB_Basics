@@ -49,7 +49,9 @@
       });
 
       $('#logoutBtn').click(function () {
-        window.location.href = '/logout';
+        $.post('/logout', function () {
+          window.location.href = '/login';
+        });
       });
 
 
@@ -67,22 +69,14 @@
       });
 
       socket.on('chat message', function (msg) {
-        const li = $('<li>').addClass('user-message');
-
-        if (msg.username === currentUser) { 
-          li.addClass('right');
+        const li = $('<li>').text(msg.text);
+        if (msg.type === 'system') {
+          li.addClass('system-message');
         } else {
-          li.addClass('left');
+          li.addClass('user-message');
         }
-
-        li.append($('<div>').addClass('username').text(msg.username));
-        
-        li.append($('<div>').addClass('text').text(msg.text));
-
         $('#messages').append(li);
-        $('#messages').scrollTop($('#messages')[0].scrollHeight); 
       });
-
 
 
       socket.on('roomData', function ({ room, users }) {

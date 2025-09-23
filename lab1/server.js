@@ -10,7 +10,6 @@ const io = require('socket.io')(http);
 
 app.use(express.urlencoded({ extended: true }));
 
-
 const sessionMiddleware = session({
     secret: 'supersecretkey',
     resave: false,
@@ -19,6 +18,8 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 io.use(sharedSession(sessionMiddleware, { autoSave: true }));
+
+app.set('io', io);
 
 require('./routes')(app);
 app.use(express.static(path.join(__dirname, 'public')));
@@ -57,21 +58,9 @@ io.on('connection', (socket) => {
         io.to(room).emit('chat message', fullMsg);
     });
 
-
     socket.on('disconnect', () => {
         chatManager.removeUserSocket(username, room, socket.id);
-
-        if (!socket.handshake.session.username) {
-            chatManager.forceRemoveUser(username, room);
-
-            const leaveMsg = { text: `${username} покинув кімнату`, type: 'system' };
-            chatManager.addMessage(room, leaveMsg);
-
-            io.to(room).emit('chat message', leaveMsg);
-            io.to(room).emit('roomData', { room, users: chatManager.getUsers(room) });
-        }
     });
-
 });
 
 http.listen(3000, () => console.log('Server running on http://localhost:3000'));
