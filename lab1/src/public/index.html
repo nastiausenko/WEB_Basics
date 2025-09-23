@@ -1,7 +1,7 @@
 <!doctype html>
-<html>
-
+<html lang="uk">
 <head>
+  <meta charset="UTF-8">
   <title>Чат</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -19,7 +19,7 @@
     </div>
     <div id="mainChat">
       <ul id="messages"></ul>
-      <form id="chatForm" action="">
+      <form id="chatForm">
         <input id="m" autocomplete="off" placeholder="Введіть повідомлення..." />
         <button>Send</button>
       </form>
@@ -30,10 +30,10 @@
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
   <script>
     $(function () {
-      var socket = io();
+      const socket = io();
       let currentUser = '';
 
-      function usernameToBlueShade(username) {
+      const usernameToBlueShade = username => {
         const base = { r: 217, g: 234, b: 253 };
 
         let hash = 0;
@@ -42,39 +42,35 @@
         }
 
         const shift = (hash % 61) - 30;
-        const r = Math.min(255, Math.max(0, base.r + shift));
-        const g = Math.min(255, Math.max(0, base.g + shift));
-        const b = Math.min(255, Math.max(0, base.b + shift));
-        return `rgb(${r}, ${g}, ${b})`;
-      }
+        return `rgb(${Math.min(255, Math.max(0, base.r + shift))},${Math.min(255, Math.max(0, base.g + shift))},${Math.min(255, Math.max(0, base.b + shift))})`;
+      };
 
-      function addMessage(msg) {
+      const addMessage = msg => {
         const li = $('<li>').addClass(msg.type === 'system' ? 'system-message' : 'user-message');
+
         if (msg.type === 'user') {
-          const splitIndex = msg.text.indexOf(':');
-          const username = msg.text.substring(0, splitIndex);
-          const messageText = msg.text.substring(splitIndex + 1);
-
-          const name = $('<div>').addClass('msg-name').text(username);
-          const text = $('<div>').addClass('msg-text').text(messageText);
-
-          li.append(name).append(text);
-
+          const [username, ...textParts] = msg.text.split(':');
+          const messageText = textParts.join(':');
+          li.append($('<div>').addClass('msg-name').text(username));
+          li.append($('<div>').addClass('msg-text').text(messageText));
           li.css('background-color', usernameToBlueShade(username));
-        } else {
-          li.text(msg.text);
-        }
+        } else li.text(msg.text);
+
         $('#messages').append(li);
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
-      }
+      };
 
-      socket.on('currentUser', (username) => {
-        currentUser = username;
-      });
+      socket.on('currentUser', username => currentUser = username);
+      socket.on('connect', () => $('#chatContainer').show());
+      socket.on('chat history', history => history.forEach(addMessage));
+      socket.on('chat message', addMessage);
+      socket.on('forceLogout', () => { alert("Немає сесії"); window.location.href = "/login"; });
 
-      socket.on('connect', function () {
-        $('#joinForm').hide();
-        $('#chatContainer').show();
+      socket.on('roomData', ({ room, users }) => {
+        $('#roomName').text(room);
+        document.title = room;
+        $('#users').empty();
+        users.forEach(u => $('#users').append($('<li>').text(u).css('font-weight', u === currentUser ? 'bold' : 'normal')));
       });
 
       $('#chatForm').submit(function () {
@@ -86,37 +82,7 @@
         return false;
       });
 
-      $('#logoutBtn').click(function () {
-        $.post('/logout', function () {
-          window.location.href = '/login';
-        });
-      });
-
-      socket.on('chat history', function (history) {
-        $('#messages').empty();
-        history.forEach(msg => addMessage(msg));
-      });
-
-      socket.on('chat message', function (msg) {
-        addMessage(msg);
-      });
-
-      socket.on('roomData', ({ room, users }) => {
-        $('#roomName').text(room);
-        document.title = room;
-
-        $('#users').empty();
-        users.forEach(u => {
-          const li = $('<li>').text(u);
-          if (u === currentUser) li.css('font-weight', 'bold');
-          $('#users').append(li);
-        });
-      });
-
-      socket.on('forceLogout', function () {
-        alert("Немає сесії, увійди заново");
-        window.location.href = "/login";
-      });
+      $('#logoutBtn').click(() => $.post('/logout', () => window.location.href = '/login'));
     });
   </script>
 </body>

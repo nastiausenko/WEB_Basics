@@ -14,7 +14,6 @@ module.exports = {
         }
 
         rooms[room].userSockets[username].push(socketId);
-
         return isNewUser;
     },
 

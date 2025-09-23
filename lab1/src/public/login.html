@@ -20,25 +20,15 @@
     const form = document.getElementById('loginForm');
     const usernameError = document.getElementById('usernameError');
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       usernameError.textContent = '';
 
-      const formData = new FormData(form);
-      const data = new URLSearchParams(formData);
+      const formData = new URLSearchParams(new FormData(form));
+      const res = await fetch('/login', { method: 'POST', body: formData });
+      const result = await res.json();
 
-      const response = await fetch('/login', {
-        method: 'POST',
-        body: data
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        window.location.href = '/';
-      } else {
-        usernameError.textContent = result.message;
-      }
+      result.success ? window.location.href = '/' : usernameError.textContent = result.message;
     });
   </script>
 </body>
