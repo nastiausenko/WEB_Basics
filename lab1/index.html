@@ -2,29 +2,33 @@
 <html>
   <head>
     <title>Чат з кімнатами</title>
-    <style>
-      body { font: 13px Arial; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 70%; }
-      form button { width: 20%; background: #4CAF50; border: none; color: white; padding: 10px; }
-      #joinForm { margin-bottom: 20px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <div id="joinForm">
-      <input id="username" placeholder="Твоє ім'я">
-      <input id="room" placeholder="Назва кімнати">
-      <button id="joinBtn">Приєднатися</button>
+      <form method="POST" action="/login">
+        <input name="username" placeholder="Твоє ім'я" required>
+        <input name="room" placeholder="Назва кімнати" required>
+        <button type="submit">Приєднатися</button>
+      </form>
     </div>
 
+    <div id="chatContainer" style="display:none;">
+  <div id="sidebar">
+    <h3>Кімната: <span id="roomName"></span></h3>
+    <h4>Користувачі:</h4>
+    <ul id="users"></ul>
+    <button id="logoutBtn">🚪 Вийти</button>
+  </div>
+  <div id="mainChat">
     <ul id="messages"></ul>
-    <form id="chatForm" action="" style="display:none;">
+    <form id="chatForm" action="">
       <input id="m" autocomplete="off" placeholder="Введи повідомлення..." />
       <button>Send</button>
     </form>
+  </div>
+</div>
+
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
@@ -32,14 +36,9 @@
       $(function () {
         var socket = io();
 
-        $('#joinBtn').click(function() {
-          const username = $('#username').val().trim();
-          const room = $('#room').val().trim();
-          if(username && room) {
-            socket.emit('joinRoom', { username, room });
-            $('#joinForm').hide();
-            $('#chatForm').show();
-          }
+        socket.on("connect", function() {
+          $('#joinForm').hide();
+          $('#chatContainer').show();
         });
 
         $('#chatForm').submit(function() {
@@ -48,10 +47,35 @@
           return false;
         });
 
+        $('#logoutBtn').click(function() {
+          window.location.href = '/logout';
+        });
+
+
+        socket.on('chat history', function(history) {
+          $('#messages').empty();
+          history.forEach(msg => {
+            $('#messages').append($('<li>').text(msg));
+          });
+        });
+
         socket.on('chat message', function(msg) {
           $('#messages').append($('<li>').text(msg));
         });
+
+        socket.on('roomData', function({ room, users }) {
+          $('#roomName').text(room);
+          $('#users').empty();
+          users.forEach(u => {
+            $('#users').append($('<li>').text(u));
+          });
+        });
       });
+
+      socket.on("forceLogout", function() {
+    alert("Немає сесії, увійди заново");
+    window.location.href = "/login";
+  });
     </script>
   </body>
 </html>
