@@ -7,6 +7,8 @@ import org.example.lab.dto.RegisterRequest;
 import org.example.lab.entity.User;
 import org.example.lab.repository.UserRepository;
 import org.example.lab.security.jwt.JwtUtil;
+import org.example.lab.service.exceptions.EmailAlreadyExistsException;
+import org.example.lab.service.exceptions.UserNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -23,7 +25,7 @@ public class UserService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("User with this email already exists");
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         User user = User.builder()
@@ -43,7 +45,7 @@ public class UserService {
                 request.getEmail(), request.getPassword()
         ));
 
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(RuntimeException::new);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UserNotFoundException(request.getEmail()));
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
         return AuthResponse.builder().token(token).build();
     }
