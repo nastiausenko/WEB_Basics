@@ -2,6 +2,7 @@ package org.example.lab.security.jwt;
 
 import lombok.RequiredArgsConstructor;
 import org.example.lab.repository.UserRepository;
+import org.example.lab.service.exceptions.UserNotFoundException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,8 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(userEntity -> User.builder()
                         .username(userEntity.getEmail())
                         .password(userEntity.getPassword())
-                        .authorities("ROLE_USER")
+                        .authorities(userEntity.getRole())
                         .build())
-                .orElseThrow(() -> new RuntimeException(email));
+                .orElseThrow(() -> new UserNotFoundException(email));
     }
 }

@@ -1,0 +1,35 @@
+package org.example.lab.service;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.example.lab.entity.User;
+import org.example.lab.repository.UserRepository;
+import org.example.lab.service.exceptions.UserNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class AdminService {
+    private final UserRepository userRepository;
+
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    }
+
+    public void grantAdmin(UUID id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+
+        user.setRole("ROLE_ADMIN");
+        userRepository.save(user);
+    }
+
+    public void revokeAdmin(UUID id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        user.setRole("ROLE_USER");
+        userRepository.save(user);
+    }
+}
