@@ -13,7 +13,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.net.URI;
 
 import static org.springframework.http.HttpStatus.*;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.ProblemDetail.forStatusAndDetail;
 
 @ControllerAdvice
