@@ -1,12 +1,13 @@
 package org.example.lab.service.exceptions;
 
-import java.util.UUID;
+import org.bson.types.ObjectId;
+
 
 public class UserNotFoundException extends RuntimeException {
     private static final String MESSAGE = "User with id %s not found";
     private static final String MSG = "User not found with email %s";
 
-    public UserNotFoundException(UUID id) {
+    public UserNotFoundException(ObjectId id) {
         super(String.format(MESSAGE, id));
     }
 

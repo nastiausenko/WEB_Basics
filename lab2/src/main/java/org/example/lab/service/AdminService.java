@@ -1,7 +1,7 @@
 package org.example.lab.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.example.lab.entity.User;
 import org.example.lab.repository.UserRepository;
 import org.example.lab.service.exceptions.UserNotFoundException;
@@ -12,7 +12,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AdminService {
     private final UserRepository userRepository;
 
@@ -20,14 +19,14 @@ public class AdminService {
         return userRepository.findAll();
     }
 
-    public void grantAdmin(UUID id) {
+    public void grantAdmin(ObjectId id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
         user.setRole("ROLE_ADMIN");
         userRepository.save(user);
     }
 
-    public void revokeAdmin(UUID id) {
+    public void revokeAdmin(ObjectId id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         user.setRole("ROLE_USER");
         userRepository.save(user);

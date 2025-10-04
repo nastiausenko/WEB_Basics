@@ -1,6 +1,5 @@
 package org.example.lab.web;
 
-import jakarta.persistence.PersistenceException;
 import org.apache.tomcat.websocket.AuthenticationException;
 import org.example.lab.service.exceptions.EmailAlreadyExistsException;
 import org.example.lab.service.exceptions.ForbiddenException;
@@ -32,14 +31,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = forStatusAndDetail(BAD_REQUEST, ex.getMessage());
         problemDetail.setType(URI.create("email-already-exists"));
         problemDetail.setTitle("Email Already Exists");
-        return problemDetail;
-    }
-
-    @ExceptionHandler(PersistenceException.class)
-    ProblemDetail handlePersistenceException(PersistenceException ex) {
-        ProblemDetail problemDetail = forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
-        problemDetail.setType(URI.create("persistence-exception"));
-        problemDetail.setTitle("Persistence exception");
         return problemDetail;
     }
 

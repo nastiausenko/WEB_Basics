@@ -1,6 +1,7 @@
 package org.example.lab.web;
 
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.example.lab.entity.User;
 import org.example.lab.service.AdminService;
 import org.springframework.http.ResponseEntity;
@@ -25,15 +26,15 @@ public class AdminController {
 
     @PostMapping("/users/{id}/grant-admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> grantAdmin(@PathVariable UUID id) {
-        adminService.grantAdmin(id);
+    public ResponseEntity<String> grantAdmin(@PathVariable String id) {
+        adminService.grantAdmin(new ObjectId(id));
         return ResponseEntity.ok("Користувач став адміністратором");
     }
 
     @PostMapping("/users/{id}/revoke-admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> revokeAdmin(@PathVariable UUID id) {
-        adminService.revokeAdmin(id);
+    public ResponseEntity<String> revokeAdmin(@PathVariable String id) {
+        adminService.revokeAdmin(new ObjectId(id));
         return ResponseEntity.ok("У користувача забрано права адміністратора");
     }
 }
