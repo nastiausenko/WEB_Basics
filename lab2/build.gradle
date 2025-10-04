@@ -38,9 +38,9 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.jboss.logging:jboss-logging:3.5.3.Final'
 
-	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.12.6'
-	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.12.6'
-	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.12.6'
+// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
+	implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.13.0'
+	implementation group: 'me.paulschwarz', name: 'spring-dotenv', version: '2.3.0'
 }
 
 tasks.named('test') {
