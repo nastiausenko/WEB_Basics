@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtUtil {
@@ -19,10 +20,10 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, List<String> roles) {
             return Jwts.builder()
                     .subject(email)
-                    .claim("role", role)
+                    .claim("roles", roles)
                     .issuedAt(new Date())
                     .expiration(new Date(System.currentTimeMillis() + expiration))
                     .signWith(getSigningKey())

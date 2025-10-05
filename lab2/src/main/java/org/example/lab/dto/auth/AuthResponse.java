@@ -1,4 +1,4 @@
-package org.example.lab.dto;
+package org.example.lab.dto.auth;
 
 import lombok.Builder;
 import lombok.Value;

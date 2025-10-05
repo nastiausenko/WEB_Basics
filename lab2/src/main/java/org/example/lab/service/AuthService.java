@@ -1,9 +1,9 @@
 package org.example.lab.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lab.dto.AuthResponse;
-import org.example.lab.dto.LoginRequest;
-import org.example.lab.dto.RegisterRequest;
+import org.example.lab.dto.auth.AuthResponse;
+import org.example.lab.dto.auth.LoginRequest;
+import org.example.lab.dto.auth.RegisterRequest;
 import org.example.lab.entity.User;
 import org.example.lab.repository.UserRepository;
 import org.example.lab.security.jwt.JwtUtil;
@@ -13,6 +13,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -32,11 +34,11 @@ public class AuthService {
                 .email(request.getEmail())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role("ROLE_USER")
+                .roles(List.of("ROLE_USER"))
                 .build();
 
         userRepository.save(user);
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRoles());
         return AuthResponse.builder().token(token).build();
     }
 
@@ -46,7 +48,7 @@ public class AuthService {
         ));
 
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UserNotFoundException(request.getEmail()));
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRoles());
         return AuthResponse.builder().token(token).build();
     }
 }

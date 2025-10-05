@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+
 @Configuration
 @RequiredArgsConstructor
 public class DataInitializer {
@@ -21,11 +23,11 @@ public class DataInitializer {
                 User admin = User.builder()
                         .email("admin@example.com")
                         .username("admin")
-                        .password(passwordEncoder.encode("admin123"))
-                        .role("ROLE_ADMIN") // роль адміна
+                        .password(passwordEncoder.encode("Admin123!"))
+                        .roles(List.of("ROLE_ADMIN", "ROLE_USER"))
                         .build();
                 userRepository.save(admin);
-                System.out.println("Admin user created: admin@example.com / admin123");
+                System.out.println("Admin user created: admin@example.com / Admin123!");
             }
         };
     }

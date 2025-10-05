@@ -2,9 +2,9 @@ package org.example.lab.web;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.lab.dto.AuthResponse;
-import org.example.lab.dto.ChangePasswordRequest;
-import org.example.lab.dto.ChangeUsernameRequest;
+import org.example.lab.dto.auth.AuthResponse;
+import org.example.lab.dto.user.ChangePasswordRequest;
+import org.example.lab.dto.user.ChangeUsernameRequest;
 import org.example.lab.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

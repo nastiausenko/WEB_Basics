@@ -23,7 +23,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        return jwtUtil.generateToken(user.getEmail(), user.getRole());
+        return jwtUtil.generateToken(user.getEmail(), user.getRoles());
     }
 
     public String updateUsername(String newUsername) {
@@ -32,7 +32,7 @@ public class UserService {
         user.setUsername(newUsername);
         userRepository.save(user);
 
-        return jwtUtil.generateToken(user.getEmail(), user.getRole());
+        return jwtUtil.generateToken(user.getEmail(), user.getRoles());
     }
 
     private User getCurrentUser() {

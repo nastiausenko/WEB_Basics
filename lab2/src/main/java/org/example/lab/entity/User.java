@@ -8,11 +8,13 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@Document(collection = "users") // назва колекції в MongoDB
+@Document(collection = "users")
 public class User {
 
     @Id
@@ -21,5 +23,5 @@ public class User {
     private String email;
     private String username;
     private String password;
-    private String role;
+    private List<String> roles;
 }

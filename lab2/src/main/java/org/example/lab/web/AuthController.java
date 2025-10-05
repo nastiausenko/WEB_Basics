@@ -2,9 +2,9 @@ package org.example.lab.web;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.lab.dto.AuthResponse;
-import org.example.lab.dto.LoginRequest;
-import org.example.lab.dto.RegisterRequest;
+import org.example.lab.dto.auth.AuthResponse;
+import org.example.lab.dto.auth.LoginRequest;
+import org.example.lab.dto.auth.RegisterRequest;
 import org.example.lab.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
