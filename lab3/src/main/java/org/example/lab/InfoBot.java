@@ -2,6 +2,7 @@ package org.example.lab;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.example.lab.contacts.ContactService;
+import org.example.lab.it.ITService;
 import org.example.lab.student.StudentService;
 import org.example.lab.utils.Query;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -23,6 +24,7 @@ public class InfoBot extends TelegramLongPollingBot {
 
     private final StudentService studentService = new StudentService();
     private final ContactService contactService = new ContactService();
+    private final ITService itService = new ITService();
     private final Map<Long, Query> userStates = new ConcurrentHashMap<>();
     private final String botUsername;
     private final String chatgptToken;
@@ -95,11 +97,20 @@ public class InfoBot extends TelegramLongPollingBot {
     private void processUserInput(Long chatId, String text, Query query) {
         switch (query) {
             case STUDENT -> processStudentData(chatId, text);
-            case IT -> sendMessage(chatId, text);
+            case IT -> processItData(chatId, text);
             case CONTACTS -> processContactsData(chatId, text);
             case CHAT_GPT -> sendMessage(chatId, "Запит відправлено до ChatGPT: " + text);
             default -> sendMessage(chatId, "Невідомий тип введення");
         }
+    }
+
+    private void processItData(Long chatId, String text) {
+        String[] techs = text.split(",");
+        for (String tech : techs) {
+            itService.saveTechnology(chatId, tech.trim());
+        }
+        sendMainMenu(chatId, "IT-технології збережено ✅\nВиберіть необхідну команду:");
+        userStates.remove(chatId);
     }
 
     private void processContactsData(Long chatId, String text) {
@@ -127,7 +138,14 @@ public class InfoBot extends TelegramLongPollingBot {
     }
 
     private void handleItQuery(CallbackQuery cq) {
-        editMessageWithBack(cq, "Заглушка: інформація про IT-технології");
+        long chatId = cq.getMessage().getChatId();
+        if (itService.hasTechnologies(chatId)) {
+            List<String> techs = itService.getTechnologies(chatId);
+            editMessageWithBack(cq, "IT-технології:\n" + String.join(", ", techs));
+        } else {
+            editMessageWithBack(cq, "Введіть IT-технології через кому (наприклад: Java, Spring, Docker)");
+            userStates.put(chatId, Query.IT);
+        }
     }
 
     private void handleContactsQuery(CallbackQuery cq) {
