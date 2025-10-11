@@ -1,7 +1,9 @@
 package org.example.lab;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.example.lab.contacts.ContactService;
 import org.example.lab.student.StudentService;
+import org.example.lab.utils.Query;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -20,7 +22,8 @@ import java.util.function.Consumer;
 public class InfoBot extends TelegramLongPollingBot {
 
     private final StudentService studentService = new StudentService();
-    private final Map<Long, Boolean> waitingForStudentData = new ConcurrentHashMap<>();
+    private final ContactService contactService = new ContactService();
+    private final Map<Long, Query> userStates = new ConcurrentHashMap<>();
     private final String botUsername;
     private final String chatgptToken;
 
@@ -48,8 +51,10 @@ public class InfoBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             String text = update.getMessage().getText();
 
-            if (Boolean.TRUE.equals(waitingForStudentData.get(chatId))) {
-                processStudentData(chatId, text);
+            Query state = userStates.getOrDefault(chatId, Query.NONE);
+
+            if (state != Query.NONE) {
+                processUserInput(chatId, text, state);
             } else if (text.equals("/start")) {
                 sendMainMenu(chatId, "Вас вітає InfoBot! Виберіть необхідну команду:");
             } else {
@@ -83,7 +88,30 @@ public class InfoBot extends TelegramLongPollingBot {
             editMessageWithBack(cq, studentService.getStudent(chatId).toString());
         } else {
             editMessageWithBack(cq, "Будь ласка, введіть своє ім'я та групу у форматі:\nПрізвище І.П., Група");
-            waitingForStudentData.put(chatId, true);
+            userStates.put(chatId, Query.STUDENT);
+        }
+    }
+
+    private void processUserInput(Long chatId, String text, Query query) {
+        switch (query) {
+            case STUDENT -> processStudentData(chatId, text);
+            case IT -> sendMessage(chatId, text);
+            case CONTACTS -> processContactsData(chatId, text);
+            case CHAT_GPT -> sendMessage(chatId, "Запит відправлено до ChatGPT: " + text);
+            default -> sendMessage(chatId, "Невідомий тип введення");
+        }
+    }
+
+    private void processContactsData(Long chatId, String text) {
+        String[] parts = text.split(",");
+        if (parts.length == 2) {
+            String phone = parts[0].trim();
+            String email = parts[1].trim();
+            contactService.saveContactsData(chatId, phone, email);
+            sendMainMenu(chatId, "Контактні дані збережено ✅\nВиберіть необхідну команду:");
+            userStates.remove(chatId);
+        } else {
+            sendMessage(chatId, "Невірний формат. Використовуйте:\n050-555-55-55, email@example.com");
         }
     }
 
@@ -92,7 +120,7 @@ public class InfoBot extends TelegramLongPollingBot {
         if (parts.length == 2) {
             studentService.saveStudentData(chatId, parts[0].trim(), parts[1].trim());
             sendMainMenu(chatId, "Дані збережено ✅\nВиберіть необхідну команду:");
-            waitingForStudentData.remove(chatId);
+            userStates.remove(chatId);
         } else {
             sendMessage(chatId, "Невірний формат. Використовуйте:\nПрізвище І.П., Група");
         }
@@ -103,7 +131,13 @@ public class InfoBot extends TelegramLongPollingBot {
     }
 
     private void handleContactsQuery(CallbackQuery cq) {
-        editMessageWithBack(cq, "Заглушка: контакти");
+        long chatId = cq.getMessage().getChatId();
+        if (contactService.hasContactsData(chatId)) {
+            editMessageWithBack(cq, contactService.getContacts(chatId).toString());
+        } else {
+            editMessageWithBack(cq, "Будь ласка, введіть телефон та пошту у форматі:\n050-555-55-55, email@example.com");
+            userStates.put(chatId, Query.CONTACTS);
+        }
     }
 
     private void handleChatGptQuery(CallbackQuery cq) {
