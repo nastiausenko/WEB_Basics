@@ -3,6 +3,7 @@ package org.example.lab;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -57,34 +58,58 @@ public class InfoBot extends TelegramLongPollingBot {
         String data = callbackQuery.getData();
         Long chatId = callbackQuery.getMessage().getChatId();
 
-        Map<String, Consumer<Long>> actions = Map.of(
+        Map<String, Consumer<CallbackQuery>> actions = Map.of(
                 "student_info", this::handleStudentQuery,
                 "it_info", this::handleItQuery,
                 "contacts", this::handleContactsQuery,
-                "chat_gpt", this::handleChatGptQuery
+                "chat_gpt", this::handleChatGptQuery,
+                "back_to_menu", this::editMessageToMainMenu
         );
 
         if (actions.containsKey(data)) {
-            actions.get(data).accept(chatId);
+            actions.get(data).accept(callbackQuery);
         } else {
             sendMessage(chatId, "Невідома команда!");
         }
     }
 
-    private void handleStudentQuery(Long chatId) {
-        sendMessage(chatId, "Заглушка: інформація про студента");
+    private void handleStudentQuery(CallbackQuery cq) {
+        editMessageWithBack(cq, "Заглушка: інформація про студента");
     }
 
-    private void handleItQuery(Long chatId) {
-        sendMessage(chatId, "Заглушка: інформація про IT-технології");
+    private void handleItQuery(CallbackQuery cq) {
+        editMessageWithBack(cq, "Заглушка: інформація про IT-технології");
     }
 
-    private void handleContactsQuery(Long chatId) {
-        sendMessage(chatId, "Заглушка: контакти");
+    private void handleContactsQuery(CallbackQuery cq) {
+        editMessageWithBack(cq, "Заглушка: контакти");
     }
 
-    private void handleChatGptQuery(Long chatId) {
-        sendMessage(chatId, "Заглушка: ChatGPT");
+    private void handleChatGptQuery(CallbackQuery cq) {
+        editMessageWithBack(cq, "Заглушка: ChatGPT");
+    }
+
+    private void sendMainMenu(Long chatId) {
+        SendMessage message = SendMessage.builder()
+                .chatId(chatId)
+                .text("Вас вітає InfoBot! Виберіть необхідну команду:")
+                .replyMarkup(buildMainMenuButtons())
+                .build();
+        sendMessage(message);
+    }
+
+    private void editMessageToMainMenu(CallbackQuery cq) {
+        EditMessageText editMessage = EditMessageText.builder()
+                .chatId(cq.getMessage().getChatId())
+                .messageId(cq.getMessage().getMessageId())
+                .text("Вас вітає InfoBot! Виберіть необхідну команду:")
+                .replyMarkup(buildMainMenuButtons())
+                .build();
+        try {
+            execute(editMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendMessage(Long chatId, String text) {
@@ -99,12 +124,39 @@ public class InfoBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMainMenu(Long chatId) {
-        SendMessage message = SendMessage.builder()
-                .chatId(chatId)
-                .text("Вас вітає InfoBot! Виберіть необхідну команду:")
-                .build();
+    private void sendMessage(SendMessage message) {
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void editMessageWithBack(CallbackQuery cq, String text) {
+        EditMessageText editMessage = EditMessageText.builder()
+                .chatId(cq.getMessage().getChatId())
+                .messageId(cq.getMessage().getMessageId())
+                .text(text)
+                .replyMarkup(buildBackButton())
+                .build();
+        try {
+            execute(editMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private InlineKeyboardMarkup buildBackButton() {
+        InlineKeyboardButton backButton = InlineKeyboardButton.builder()
+                .text("⬅️ Back")
+                .callbackData("back_to_menu")
+                .build();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        rows.add(List.of(backButton));
+        return new InlineKeyboardMarkup(rows);
+    }
+
+    private InlineKeyboardMarkup buildMainMenuButtons() {
         InlineKeyboardButton studentButton = InlineKeyboardButton.builder()
                 .text("Student")
                 .callbackData("student_info")
@@ -131,17 +183,6 @@ public class InfoBot extends TelegramLongPollingBot {
         rows.add(List.of(contactsButton));
         rows.add(List.of(chatGPTButton));
 
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup(rows);
-        message.setReplyMarkup(markup);
-
-        sendMessage(message);
-    }
-
-    private void sendMessage(SendMessage message) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        return new InlineKeyboardMarkup(rows);
     }
 }
