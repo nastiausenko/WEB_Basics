@@ -3,6 +3,7 @@ package org.example.lab;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -10,6 +11,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class InfoBot extends TelegramLongPollingBot {
 
@@ -22,11 +25,11 @@ public class InfoBot extends TelegramLongPollingBot {
         Dotenv dotenv = Dotenv.load();
         this.botUsername = System.getenv("BOT_USERNAME") != null
                 ? System.getenv("BOT_USERNAME")
-                : dotenv.get("BOT_USERNAME");
+                : dotenv.get("BOT_USERNAME", "InfoBot");
 
         this.chatgptToken = System.getenv("OPENAI_API_KEY") != null
                 ? System.getenv("OPENAI_API_KEY")
-                : dotenv.get("OPENAI_API_KEY");
+                : dotenv.get("OPENAI_API_KEY", "");
     }
 
     @Override
@@ -45,7 +48,43 @@ public class InfoBot extends TelegramLongPollingBot {
             } else {
                 sendMessage(chatId, "Натисніть /start, щоб відкрити меню");
             }
+        } else if (update.hasCallbackQuery()) {
+            handleCallbackQuery(update.getCallbackQuery());
         }
+    }
+
+    private void handleCallbackQuery(CallbackQuery callbackQuery) {
+        String data = callbackQuery.getData();
+        Long chatId = callbackQuery.getMessage().getChatId();
+
+        Map<String, Consumer<Long>> actions = Map.of(
+                "student_info", this::handleStudentQuery,
+                "it_info", this::handleItQuery,
+                "contacts", this::handleContactsQuery,
+                "chat_gpt", this::handleChatGptQuery
+        );
+
+        if (actions.containsKey(data)) {
+            actions.get(data).accept(chatId);
+        } else {
+            sendMessage(chatId, "Невідома команда!");
+        }
+    }
+
+    private void handleStudentQuery(Long chatId) {
+        sendMessage(chatId, "Заглушка: інформація про студента");
+    }
+
+    private void handleItQuery(Long chatId) {
+        sendMessage(chatId, "Заглушка: інформація про IT-технології");
+    }
+
+    private void handleContactsQuery(Long chatId) {
+        sendMessage(chatId, "Заглушка: контакти");
+    }
+
+    private void handleChatGptQuery(Long chatId) {
+        sendMessage(chatId, "Заглушка: ChatGPT");
     }
 
     private void sendMessage(Long chatId, String text) {
