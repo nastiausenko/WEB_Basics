@@ -1,4 +1,4 @@
-package org.example.lab.it;
+package org.example.lab.data.it;
 
 import java.util.ArrayList;
 import java.util.List;

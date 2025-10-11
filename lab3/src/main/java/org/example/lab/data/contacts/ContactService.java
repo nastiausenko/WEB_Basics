@@ -1,4 +1,4 @@
-package org.example.lab.contacts;
+package org.example.lab.data.contacts;
 
 
 import java.util.Map;

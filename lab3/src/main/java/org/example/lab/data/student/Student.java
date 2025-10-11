@@ -1,4 +1,4 @@
-package org.example.lab.student;
+package org.example.lab.data.student;
 
 import lombok.*;
 

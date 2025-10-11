@@ -8,20 +8,29 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-
 public class TelegramBot {
-    static Dotenv dotenv = Dotenv.load();
-    public static String telegramToken = dotenv.get("BOT_TOKEN");
 
     private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
     public static void main(String[] args) throws TelegramApiException {
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+        String telegramToken = System.getenv("BOT_TOKEN");
+        if (telegramToken == null || telegramToken.isEmpty()) {
+            telegramToken = dotenv.get("BOT_TOKEN");
+        }
+
+        if (telegramToken == null || telegramToken.isEmpty()) {
+            log.error("Bot token is not set! Please set BOT_TOKEN in environment variables or .env file.");
+            return;
+        }
+
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         try {
             log.info("Registering bot...");
             telegramBotsApi.registerBot(new InfoBot(telegramToken));
         } catch (TelegramApiRequestException e) {
-            log.error("Failed to register bot(check internet connection / bot token or make sure only one instance of bot is running).", e);
+            log.error("Failed to register bot (check internet connection / bot token or make sure only one instance of bot is running).", e);
         }
         log.info("Telegram bot is ready to accept updates from user......");
     }

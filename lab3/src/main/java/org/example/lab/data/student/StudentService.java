@@ -1,4 +1,4 @@
-package org.example.lab.student;
+package org.example.lab.data.student;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,9 +1,13 @@
 package org.example.lab;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import org.example.lab.contacts.ContactService;
-import org.example.lab.it.ITService;
-import org.example.lab.student.StudentService;
+import org.example.lab.data.contacts.ContactService;
+import org.example.lab.handlers.ContactHandler;
+import org.example.lab.handlers.ITHandler;
+import org.example.lab.handlers.StudentHandler;
+import org.example.lab.handlers.UserInputHandler;
+import org.example.lab.data.it.ITService;
+import org.example.lab.data.student.StudentService;
 import org.example.lab.utils.Query;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -26,6 +30,13 @@ public class InfoBot extends TelegramLongPollingBot {
     private final ContactService contactService = new ContactService();
     private final ITService itService = new ITService();
     private final Map<Long, Query> userStates = new ConcurrentHashMap<>();
+
+    private final Map<Query, UserInputHandler> handlers = Map.of(
+            Query.STUDENT, new StudentHandler(studentService),
+            Query.CONTACTS, new ContactHandler(contactService),
+            Query.IT, new ITHandler(itService)
+    );
+
     private final String botUsername;
     private final String chatgptToken;
 
@@ -53,12 +64,16 @@ public class InfoBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             String text = update.getMessage().getText();
 
+            if (text.equals("/start")) {
+                sendMainMenu(chatId, "Вас вітає InfoBot! Виберіть необхідну команду:");
+                userStates.remove(chatId);
+                return;
+            }
+
             Query state = userStates.getOrDefault(chatId, Query.NONE);
 
             if (state != Query.NONE) {
                 processUserInput(chatId, text, state);
-            } else if (text.equals("/start")) {
-                sendMainMenu(chatId, "Вас вітає InfoBot! Виберіть необхідну команду:");
             } else {
                 sendMessage(chatId, "Натисніть /start, щоб відкрити меню");
             }
@@ -77,7 +92,10 @@ public class InfoBot extends TelegramLongPollingBot {
                 "it_info", this::handleItQuery,
                 "contacts", this::handleContactsQuery,
                 "chat_gpt", this::handleChatGptQuery,
-                "back_to_menu", this::editMessageToMainMenu
+                "back_to_menu", callback -> {
+                    clearUserState(chatId);
+                    editMessageToMainMenu(callback);
+                }
         );
 
         actions.getOrDefault(data, callback -> sendMessage(chatId, "Невідома команда!"))
@@ -95,45 +113,11 @@ public class InfoBot extends TelegramLongPollingBot {
     }
 
     private void processUserInput(Long chatId, String text, Query query) {
-        switch (query) {
-            case STUDENT -> processStudentData(chatId, text);
-            case IT -> processItData(chatId, text);
-            case CONTACTS -> processContactsData(chatId, text);
-            case CHAT_GPT -> sendMessage(chatId, "Запит відправлено до ChatGPT: " + text);
-            default -> sendMessage(chatId, "Невідомий тип введення");
-        }
-    }
-
-    private void processItData(Long chatId, String text) {
-        String[] techs = text.split(",");
-        for (String tech : techs) {
-            itService.saveTechnology(chatId, tech.trim());
-        }
-        sendMainMenu(chatId, "IT-технології збережено ✅\nВиберіть необхідну команду:");
-        userStates.remove(chatId);
-    }
-
-    private void processContactsData(Long chatId, String text) {
-        String[] parts = text.split(",");
-        if (parts.length == 2) {
-            String phone = parts[0].trim();
-            String email = parts[1].trim();
-            contactService.saveContactsData(chatId, phone, email);
-            sendMainMenu(chatId, "Контактні дані збережено ✅\nВиберіть необхідну команду:");
-            userStates.remove(chatId);
+        UserInputHandler handler = handlers.get(query);
+        if (handler != null) {
+            handler.handle(chatId, text, this);
         } else {
-            sendMessage(chatId, "Невірний формат. Використовуйте:\n050-555-55-55, email@example.com");
-        }
-    }
-
-    private void processStudentData(Long chatId, String text) {
-        String[] parts = text.split(",");
-        if (parts.length == 2) {
-            studentService.saveStudentData(chatId, parts[0].trim(), parts[1].trim());
-            sendMainMenu(chatId, "Дані збережено ✅\nВиберіть необхідну команду:");
-            userStates.remove(chatId);
-        } else {
-            sendMessage(chatId, "Невірний формат. Використовуйте:\nПрізвище І.П., Група");
+            sendMessage(chatId, "Невідомий тип введення");
         }
     }
 
@@ -162,7 +146,7 @@ public class InfoBot extends TelegramLongPollingBot {
         editMessageWithBack(cq, "Заглушка: ChatGPT");
     }
 
-    private void sendMainMenu(Long chatId, String text) {
+    public void sendMainMenu(Long chatId, String text) {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
@@ -185,7 +169,7 @@ public class InfoBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessage(Long chatId, String text) {
+    public void sendMessage(Long chatId, String text) {
         SendMessage msg = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
@@ -236,5 +220,9 @@ public class InfoBot extends TelegramLongPollingBot {
         rows.add(List.of(InlineKeyboardButton.builder().text("Contacts").callbackData("contacts").build()));
         rows.add(List.of(InlineKeyboardButton.builder().text("ChatGPT").callbackData("chat_gpt").build()));
         return new InlineKeyboardMarkup(rows);
+    }
+
+    public void clearUserState(Long chatId) {
+        userStates.remove(chatId);
     }
 }
