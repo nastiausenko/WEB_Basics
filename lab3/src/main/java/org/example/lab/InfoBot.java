@@ -1,6 +1,7 @@
 package org.example.lab;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.example.lab.student.StudentService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -13,10 +14,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class InfoBot extends TelegramLongPollingBot {
 
+    private final StudentService studentService = new StudentService();
+    private final Map<Long, Boolean> waitingForStudentData = new ConcurrentHashMap<>();
     private final String botUsername;
     private final String chatgptToken;
 
@@ -44,19 +48,22 @@ public class InfoBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             String text = update.getMessage().getText();
 
-            if (text.equals("/start")) {
-                sendMainMenu(chatId);
+            if (Boolean.TRUE.equals(waitingForStudentData.get(chatId))) {
+                processStudentData(chatId, text);
+            } else if (text.equals("/start")) {
+                sendMainMenu(chatId, "Вас вітає InfoBot! Виберіть необхідну команду:");
             } else {
                 sendMessage(chatId, "Натисніть /start, щоб відкрити меню");
             }
+
         } else if (update.hasCallbackQuery()) {
             handleCallbackQuery(update.getCallbackQuery());
         }
     }
 
-    private void handleCallbackQuery(CallbackQuery callbackQuery) {
-        String data = callbackQuery.getData();
-        Long chatId = callbackQuery.getMessage().getChatId();
+    private void handleCallbackQuery(CallbackQuery cq) {
+        String data = cq.getData();
+        Long chatId = cq.getMessage().getChatId();
 
         Map<String, Consumer<CallbackQuery>> actions = Map.of(
                 "student_info", this::handleStudentQuery,
@@ -66,15 +73,29 @@ public class InfoBot extends TelegramLongPollingBot {
                 "back_to_menu", this::editMessageToMainMenu
         );
 
-        if (actions.containsKey(data)) {
-            actions.get(data).accept(callbackQuery);
-        } else {
-            sendMessage(chatId, "Невідома команда!");
-        }
+        actions.getOrDefault(data, callback -> sendMessage(chatId, "Невідома команда!"))
+                .accept(cq);
     }
 
     private void handleStudentQuery(CallbackQuery cq) {
-        editMessageWithBack(cq, "Заглушка: інформація про студента");
+        long chatId = cq.getMessage().getChatId();
+        if (studentService.hasStudentData(chatId)) {
+            editMessageWithBack(cq, studentService.getStudent(chatId).toString());
+        } else {
+            editMessageWithBack(cq, "Будь ласка, введіть своє ім'я та групу у форматі:\nПрізвище І.П., Група");
+            waitingForStudentData.put(chatId, true);
+        }
+    }
+
+    private void processStudentData(Long chatId, String text) {
+        String[] parts = text.split(",");
+        if (parts.length == 2) {
+            studentService.saveStudentData(chatId, parts[0].trim(), parts[1].trim());
+            sendMainMenu(chatId, "Дані збережено ✅\nВиберіть необхідну команду:");
+            waitingForStudentData.remove(chatId);
+        } else {
+            sendMessage(chatId, "Невірний формат. Використовуйте:\nПрізвище І.П., Група");
+        }
     }
 
     private void handleItQuery(CallbackQuery cq) {
@@ -89,10 +110,10 @@ public class InfoBot extends TelegramLongPollingBot {
         editMessageWithBack(cq, "Заглушка: ChatGPT");
     }
 
-    private void sendMainMenu(Long chatId) {
+    private void sendMainMenu(Long chatId, String text) {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
-                .text("Вас вітає InfoBot! Виберіть необхідну команду:")
+                .text(text)
                 .replyMarkup(buildMainMenuButtons())
                 .build();
         sendMessage(message);
@@ -157,32 +178,11 @@ public class InfoBot extends TelegramLongPollingBot {
     }
 
     private InlineKeyboardMarkup buildMainMenuButtons() {
-        InlineKeyboardButton studentButton = InlineKeyboardButton.builder()
-                .text("Student")
-                .callbackData("student_info")
-                .build();
-
-        InlineKeyboardButton itButton = InlineKeyboardButton.builder()
-                .text("IT-technologies")
-                .callbackData("it_info")
-                .build();
-
-        InlineKeyboardButton contactsButton = InlineKeyboardButton.builder()
-                .text("Contacts")
-                .callbackData("contacts")
-                .build();
-
-        InlineKeyboardButton chatGPTButton = InlineKeyboardButton.builder()
-                .text("ChatGPT")
-                .callbackData("chat_gpt")
-                .build();
-
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        rows.add(List.of(studentButton));
-        rows.add(List.of(itButton));
-        rows.add(List.of(contactsButton));
-        rows.add(List.of(chatGPTButton));
-
+        rows.add(List.of(InlineKeyboardButton.builder().text("Student").callbackData("student_info").build()));
+        rows.add(List.of(InlineKeyboardButton.builder().text("IT-technologies").callbackData("it_info").build()));
+        rows.add(List.of(InlineKeyboardButton.builder().text("Contacts").callbackData("contacts").build()));
+        rows.add(List.of(InlineKeyboardButton.builder().text("ChatGPT").callbackData("chat_gpt").build()));
         return new InlineKeyboardMarkup(rows);
     }
 }
