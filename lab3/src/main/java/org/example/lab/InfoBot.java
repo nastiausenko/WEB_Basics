@@ -1,6 +1,5 @@
 package org.example.lab;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import org.example.lab.data.chat_gpt.ChatGptServiceGroq;
 import org.example.lab.data.contacts.ContactService;
 import org.example.lab.data.it.ITService;
@@ -37,16 +36,18 @@ public class InfoBot extends TelegramLongPollingBot {
     public InfoBot(String botToken) {
         super(botToken);
 
-        Dotenv dotenv = Dotenv.load();
-        this.botUsername = System.getenv("BOT_USERNAME") != null
-                ? System.getenv("BOT_USERNAME")
-                : dotenv.get("BOT_USERNAME", "InfoBot");
+        String username = System.getenv("BOT_USERNAME");
+        if (username == null || username.isEmpty()) {
+            username = "InfoBot";
+        }
+        this.botUsername = username;
 
-        String chatgptToken = System.getenv("GROQ_API_KEY") != null
-                ? System.getenv("GROQ_API_KEY")
-                : dotenv.get("GROQ_API_KEY");
+        String groqToken = System.getenv("GROQ_API_KEY");
+        if (groqToken == null || groqToken.isEmpty()) {
+            throw new RuntimeException("GROQ_API_KEY is not set!");
+        }
 
-        chatGptServiceGroq = new ChatGptServiceGroq(chatgptToken);
+        chatGptServiceGroq = new ChatGptServiceGroq(groqToken);
 
         handlers = Map.of(
                 Query.STUDENT, new StudentHandler(studentService),
