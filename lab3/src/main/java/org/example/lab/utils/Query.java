@@ -5,5 +5,5 @@ public enum Query {
     STUDENT,
     IT,
     CONTACTS,
-    CHAT_GPT
+    CHATGPT
 }

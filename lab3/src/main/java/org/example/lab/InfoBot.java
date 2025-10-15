@@ -1,11 +1,9 @@
 package org.example.lab;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.example.lab.data.chat_gpt.ChatGptServiceGroq;
 import org.example.lab.data.contacts.ContactService;
-import org.example.lab.handlers.ContactHandler;
-import org.example.lab.handlers.ITHandler;
-import org.example.lab.handlers.StudentHandler;
-import org.example.lab.handlers.UserInputHandler;
+import org.example.lab.handlers.*;
 import org.example.lab.data.it.ITService;
 import org.example.lab.data.student.StudentService;
 import org.example.lab.utils.Query;
@@ -29,16 +27,15 @@ public class InfoBot extends TelegramLongPollingBot {
     private final StudentService studentService = new StudentService();
     private final ContactService contactService = new ContactService();
     private final ITService itService = new ITService();
-    private final Map<Long, Query> userStates = new ConcurrentHashMap<>();
+//    private final ChatGptService chatGptService; //OpenAI demonstration
+    private final ChatGptServiceGroq chatGptServiceGroq;
 
-    private final Map<Query, UserInputHandler> handlers = Map.of(
-            Query.STUDENT, new StudentHandler(studentService),
-            Query.CONTACTS, new ContactHandler(contactService),
-            Query.IT, new ITHandler(itService)
-    );
+    private final Map<Long, Query> userStates = new ConcurrentHashMap<>();
+    private final Map<Long, Integer> pendingMessages = new ConcurrentHashMap<>();
+
+    private final Map<Query, UserInputHandler> handlers;
 
     private final String botUsername;
-    private final String chatgptToken;
 
     public InfoBot(String botToken) {
         super(botToken);
@@ -48,9 +45,19 @@ public class InfoBot extends TelegramLongPollingBot {
                 ? System.getenv("BOT_USERNAME")
                 : dotenv.get("BOT_USERNAME", "InfoBot");
 
-        this.chatgptToken = System.getenv("OPENAI_API_KEY") != null
-                ? System.getenv("OPENAI_API_KEY")
-                : dotenv.get("OPENAI_API_KEY", "");
+        String chatgptToken = System.getenv("GROQ_API_KEY") != null
+                ? System.getenv("GROQ_API_KEY")
+                : dotenv.get("GROQ_API_KEY");
+
+//        chatGptService = new ChatGptService();
+        chatGptServiceGroq = new ChatGptServiceGroq(chatgptToken);
+
+        handlers = Map.of(
+                Query.STUDENT, new StudentHandler(studentService),
+                Query.CONTACTS, new ContactHandler(contactService),
+                Query.IT, new ITHandler(itService),
+                Query.CHATGPT, new ChatGptHandler(chatGptServiceGroq)
+        );
     }
 
     @Override
@@ -104,10 +111,11 @@ public class InfoBot extends TelegramLongPollingBot {
 
     private void handleStudentQuery(CallbackQuery cq) {
         long chatId = cq.getMessage().getChatId();
+        int messageId = cq.getMessage().getMessageId();
         if (studentService.hasStudentData(chatId)) {
-            editMessageWithBack(cq, studentService.getStudent(chatId).toString());
+            editMessageWithBack(chatId, messageId, studentService.getStudent(chatId).toString());
         } else {
-            editMessageWithBack(cq, "Будь ласка, введіть своє ім'я та групу у форматі:\nПрізвище І.П., Група");
+            editMessageWithBack(chatId, messageId, "Будь ласка, введіть своє ім'я та групу у форматі:\nПрізвище І.П., Група");
             userStates.put(chatId, Query.STUDENT);
         }
     }
@@ -123,27 +131,33 @@ public class InfoBot extends TelegramLongPollingBot {
 
     private void handleItQuery(CallbackQuery cq) {
         long chatId = cq.getMessage().getChatId();
+        int messageId = cq.getMessage().getMessageId();
         if (itService.hasTechnologies(chatId)) {
             List<String> techs = itService.getTechnologies(chatId);
-            editMessageWithBack(cq, "IT-технології:\n" + String.join(", ", techs));
+            editMessageWithBack(chatId, messageId, "IT-технології:\n" + String.join(", ", techs));
         } else {
-            editMessageWithBack(cq, "Введіть IT-технології через кому (наприклад: Java, Spring, Docker)");
+            editMessageWithBack(chatId, messageId, "Введіть IT-технології через кому (наприклад: Java, Spring, Docker)");
             userStates.put(chatId, Query.IT);
         }
     }
 
     private void handleContactsQuery(CallbackQuery cq) {
         long chatId = cq.getMessage().getChatId();
+        int messageId = cq.getMessage().getMessageId();
         if (contactService.hasContactsData(chatId)) {
-            editMessageWithBack(cq, contactService.getContacts(chatId).toString());
+            editMessageWithBack(chatId, messageId, contactService.getContacts(chatId).toString());
         } else {
-            editMessageWithBack(cq, "Будь ласка, введіть телефон та пошту у форматі:\n050-555-55-55, email@example.com");
+            editMessageWithBack(chatId, messageId, "Будь ласка, введіть телефон та пошту у форматі:\n050-555-55-55, email@example.com");
             userStates.put(chatId, Query.CONTACTS);
         }
     }
 
     private void handleChatGptQuery(CallbackQuery cq) {
-        editMessageWithBack(cq, "Заглушка: ChatGPT");
+        long chatId = cq.getMessage().getChatId();
+        int messageId = cq.getMessage().getMessageId();
+        editMessageWithBack(chatId, messageId, "Введіть ваш запит для ChatGPT:");
+        userStates.put(chatId, Query.CHATGPT);
+        pendingMessages.put(chatId, messageId);
     }
 
     public void sendMainMenu(Long chatId, String text) {
@@ -189,10 +203,10 @@ public class InfoBot extends TelegramLongPollingBot {
         }
     }
 
-    private void editMessageWithBack(CallbackQuery cq, String text) {
+    public void editMessageWithBack(Long chatId, Integer messageId, String text) {
         EditMessageText editMessage = EditMessageText.builder()
-                .chatId(cq.getMessage().getChatId())
-                .messageId(cq.getMessage().getMessageId())
+                .chatId(chatId)
+                .messageId(messageId)
                 .text(text)
                 .replyMarkup(buildBackButton())
                 .build();
@@ -224,5 +238,13 @@ public class InfoBot extends TelegramLongPollingBot {
 
     public void clearUserState(Long chatId) {
         userStates.remove(chatId);
+    }
+
+    public Integer getPendingMessageId(Long chatId) {
+        return pendingMessages.get(chatId);
+    }
+
+    public void clearPendingMessage(Long chatId) {
+        pendingMessages.remove(chatId);
     }
 }
