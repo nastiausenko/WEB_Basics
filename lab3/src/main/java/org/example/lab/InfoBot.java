@@ -3,9 +3,9 @@ package org.example.lab;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.example.lab.data.chat_gpt.ChatGptServiceGroq;
 import org.example.lab.data.contacts.ContactService;
-import org.example.lab.handlers.*;
 import org.example.lab.data.it.ITService;
 import org.example.lab.data.student.StudentService;
+import org.example.lab.handlers.*;
 import org.example.lab.utils.Query;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -22,18 +22,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-public class InfoBot extends TelegramLongPollingBot {
+import static org.example.lab.utils.Log.GLOBAL;
 
+public class InfoBot extends TelegramLongPollingBot {
     private final StudentService studentService = new StudentService();
     private final ContactService contactService = new ContactService();
     private final ITService itService = new ITService();
-//    private final ChatGptService chatGptService; //OpenAI demonstration
     private final ChatGptServiceGroq chatGptServiceGroq;
 
     private final Map<Long, Query> userStates = new ConcurrentHashMap<>();
-
     private final Map<Query, UserInputHandler> handlers;
-
     private final String botUsername;
 
     public InfoBot(String botToken) {
@@ -48,7 +46,6 @@ public class InfoBot extends TelegramLongPollingBot {
                 ? System.getenv("GROQ_API_KEY")
                 : dotenv.get("GROQ_API_KEY");
 
-//        chatGptService = new ChatGptService();
         chatGptServiceGroq = new ChatGptServiceGroq(chatgptToken);
 
         handlers = Map.of(
@@ -67,25 +64,25 @@ public class InfoBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            long chatId = update.getMessage().getChatId();
-            String text = update.getMessage().getText();
-
-            if (text.equals("/start")) {
-                sendMainMenu(chatId, "Вас вітає InfoBot! Виберіть необхідну команду:");
-                userStates.remove(chatId);
-                return;
-            }
-
-            Query state = userStates.getOrDefault(chatId, Query.NONE);
-
-            if (state != Query.NONE) {
-                processUserInput(chatId, text, state);
-            } else {
-                sendMessage(chatId, "Натисніть /start, щоб відкрити меню");
-            }
-
+            handleMessage(update.getMessage().getChatId(), update.getMessage().getText());
         } else if (update.hasCallbackQuery()) {
             handleCallbackQuery(update.getCallbackQuery());
+        }
+    }
+
+    private void handleMessage(Long chatId, String text) {
+        if (text.equals("/start")) {
+            sendMainMenu(chatId, "Вас вітає InfoBot! Виберіть необхідну команду:");
+            userStates.remove(chatId);
+            return;
+        }
+
+        Query state = userStates.getOrDefault(chatId, Query.NONE);
+
+        if (state != Query.NONE) {
+            processUserInput(chatId, text, state);
+        } else {
+            sendMessage(chatId, "Натисніть /start, щоб відкрити меню");
         }
     }
 
@@ -110,12 +107,44 @@ public class InfoBot extends TelegramLongPollingBot {
 
     private void handleStudentQuery(CallbackQuery cq) {
         long chatId = cq.getMessage().getChatId();
+        String msg;
         if (studentService.hasStudentData(chatId)) {
-            editMessageWithBack(cq, studentService.getStudent(chatId).toString());
+            msg = studentService.getStudent(chatId).toString();
         } else {
-            editMessageWithBack(cq, "Будь ласка, введіть своє ім'я та групу у форматі:\nПрізвище І.П., Група");
+            msg = "Будь ласка, введіть своє ім'я та групу у форматі:\nПрізвище І.П., Група";
             userStates.put(chatId, Query.STUDENT);
         }
+        editMessage(cq, msg);
+    }
+
+    private void handleItQuery(CallbackQuery cq) {
+        long chatId = cq.getMessage().getChatId();
+        String msg;
+        if (itService.hasTechnologies(chatId)) {
+            msg = "IT-технології:\n" + String.join(", ", itService.getTechnologies(chatId));
+        } else {
+            msg = "Введіть IT-технології через кому (наприклад: Java, Spring, Docker)";
+            userStates.put(chatId, Query.IT);
+        }
+        editMessage(cq, msg);
+    }
+
+    private void handleContactsQuery(CallbackQuery cq) {
+        long chatId = cq.getMessage().getChatId();
+        String msg;
+        if (contactService.hasContactsData(chatId)) {
+            msg = contactService.getContacts(chatId).toString();
+        } else {
+            msg = "Будь ласка, введіть телефон та пошту у форматі:\n050-555-55-55, email@example.com";
+            userStates.put(chatId, Query.CONTACTS);
+        }
+        editMessage(cq, msg);
+    }
+
+    private void handleChatGptQuery(CallbackQuery cq) {
+        long chatId = cq.getMessage().getChatId();
+        editMessage(cq, "Введіть ваш запит для ChatGPT:");
+        userStates.put(chatId, Query.CHATGPT);
     }
 
     private void processUserInput(Long chatId, String text, Query query) {
@@ -127,40 +156,35 @@ public class InfoBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleItQuery(CallbackQuery cq) {
-        long chatId = cq.getMessage().getChatId();
-        if (itService.hasTechnologies(chatId)) {
-            List<String> techs = itService.getTechnologies(chatId);
-            editMessageWithBack(cq, "IT-технології:\n" + String.join(", ", techs));
-        } else {
-            editMessageWithBack(cq, "Введіть IT-технології через кому (наприклад: Java, Spring, Docker)");
-            userStates.put(chatId, Query.IT);
-        }
-    }
-
-    private void handleContactsQuery(CallbackQuery cq) {
-        long chatId = cq.getMessage().getChatId();
-        if (contactService.hasContactsData(chatId)) {
-            editMessageWithBack(cq, contactService.getContacts(chatId).toString());
-        } else {
-            editMessageWithBack(cq, "Будь ласка, введіть телефон та пошту у форматі:\n050-555-55-55, email@example.com");
-            userStates.put(chatId, Query.CONTACTS);
-        }
-    }
-
-    private void handleChatGptQuery(CallbackQuery cq) {
-        long chatId = cq.getMessage().getChatId();
-        editMessageWithBack(cq, "Введіть ваш запит для ChatGPT:");
-        userStates.put(chatId, Query.CHATGPT);
-    }
-
     public void sendMainMenu(Long chatId, String text) {
-        SendMessage message = SendMessage.builder()
+        sendMessage(chatId, text, buildMainMenuButtons());
+    }
+
+    public void sendMessage(Long chatId, String text) {
+        sendMessage(chatId, text, null);
+    }
+
+    public void sendMessageWithBack(Long chatId, String text) {
+        sendMessage(chatId, text, buildBackButton());
+    }
+
+    private void sendMessage(Long chatId, String text, InlineKeyboardMarkup markup) {
+        SendMessage msg = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
-                .replyMarkup(buildMainMenuButtons())
+                .replyMarkup(markup)
                 .build();
-        sendMessage(message);
+        executeSafe(msg);
+    }
+
+    private void editMessage(CallbackQuery cq, String text) {
+        EditMessageText editMessage = EditMessageText.builder()
+                .chatId(cq.getMessage().getChatId())
+                .messageId(cq.getMessage().getMessageId())
+                .text(text)
+                .replyMarkup(buildBackButton())
+                .build();
+        executeSafe(editMessage);
     }
 
     private void editMessageToMainMenu(CallbackQuery cq) {
@@ -170,70 +194,31 @@ public class InfoBot extends TelegramLongPollingBot {
                 .text("Вас вітає InfoBot! Виберіть необхідну команду:")
                 .replyMarkup(buildMainMenuButtons())
                 .build();
-        try {
-            execute(editMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        executeSafe(editMessage);
     }
 
-    public void sendMessage(Long chatId, String text) {
-        SendMessage msg = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .build();
+    private void executeSafe(SendMessage msg) {
         try {
             execute(msg);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            GLOBAL.error("Помилка при відправці повідомлення: {}", e.getMessage(), e);
         }
     }
 
-    private void sendMessage(SendMessage message) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void editMessageWithBack(CallbackQuery cq, String text) {
-        long chatId = cq.getMessage().getChatId();
-        int messageId = cq.getMessage().getMessageId();
-
-        EditMessageText editMessage = EditMessageText.builder()
-                .chatId(chatId)
-                .messageId(messageId)
-                .text(text)
-                .replyMarkup(buildBackButton())
-                .build();
+    private void executeSafe(EditMessageText editMessage) {
         try {
             execute(editMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            GLOBAL.error("Помилка при редагуванні повідомлення: {}", e.getMessage(), e);
         }
     }
 
-    public void sendMessageWithBack(Long chatId, String text) {
-        SendMessage editMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .replyMarkup(buildBackButton())
-                .build();
-        try {
-            execute(editMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
     private InlineKeyboardMarkup buildBackButton() {
         InlineKeyboardButton backButton = InlineKeyboardButton.builder()
                 .text("⬅️ Back")
                 .callbackData("back_to_menu")
                 .build();
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        rows.add(List.of(backButton));
-        return new InlineKeyboardMarkup(rows);
+        return new InlineKeyboardMarkup(List.of(List.of(backButton)));
     }
 
     private InlineKeyboardMarkup buildMainMenuButtons() {

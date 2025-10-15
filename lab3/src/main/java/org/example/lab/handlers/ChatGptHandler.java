@@ -2,9 +2,6 @@ package org.example.lab.handlers;
 
 import org.example.lab.InfoBot;
 import org.example.lab.data.chat_gpt.ChatService;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class ChatGptHandler implements UserInputHandler {
 

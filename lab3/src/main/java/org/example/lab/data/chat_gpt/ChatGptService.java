@@ -8,8 +8,9 @@ import com.openai.models.chat.completions.ChatCompletionCreateParams;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ChatGptService implements ChatService {
+import static org.example.lab.utils.Log.GLOBAL;
 
+public class ChatGptService implements ChatService {
     private final OpenAIClient client;
     private final Map<String, String> cache = new ConcurrentHashMap<>();
 
@@ -40,7 +41,7 @@ public class ChatGptService implements ChatService {
             return text;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            GLOBAL.error("Сталася помилка при отриманні відповіді від ChatGPT: {}", e.getMessage(), e);
             return "Сталася помилка при отриманні відповіді від ChatGPT";
         }
     }

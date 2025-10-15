@@ -1,17 +1,14 @@
 package org.example.lab;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import static org.example.lab.utils.Log.GLOBAL;
+
 public class TelegramBot {
-
-    private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
-
     public static void main(String[] args) throws TelegramApiException {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
@@ -21,17 +18,17 @@ public class TelegramBot {
         }
 
         if (telegramToken == null || telegramToken.isEmpty()) {
-            log.error("Bot token is not set! Please set BOT_TOKEN in environment variables or .env file.");
+            GLOBAL.error("Bot token is not set! Please set BOT_TOKEN in environment variables or .env file.");
             return;
         }
 
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         try {
-            log.info("Registering bot...");
+            GLOBAL.info("Registering bot...");
             telegramBotsApi.registerBot(new InfoBot(telegramToken));
         } catch (TelegramApiRequestException e) {
-            log.error("Failed to register bot (check internet connection / bot token or make sure only one instance of bot is running).", e);
+            GLOBAL.error("Failed to register bot (check internet connection / bot token or make sure only one instance of bot is running).", e);
         }
-        log.info("Telegram bot is ready to accept updates from user......");
+        GLOBAL.info("Telegram bot is ready to accept updates from user......");
     }
 }

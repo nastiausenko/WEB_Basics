@@ -12,6 +12,8 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.example.lab.utils.Log.GLOBAL;
+
 public class ChatGptServiceGroq implements ChatService {
 
     private static final String GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
@@ -74,7 +76,7 @@ public class ChatGptServiceGroq implements ChatService {
                 return "Помилка від API (status=" + status + "): " + respBody;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            GLOBAL.error("Сталася помилка при отриманні відповіді від Groq: {}", e.getMessage(), e);
             return "Сталася помилка при отриманні відповіді від Groq: " + e.getMessage();
         }
     }
