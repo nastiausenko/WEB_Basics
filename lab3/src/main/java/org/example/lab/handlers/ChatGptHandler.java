@@ -2,6 +2,9 @@ package org.example.lab.handlers;
 
 import org.example.lab.InfoBot;
 import org.example.lab.data.chat_gpt.ChatService;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class ChatGptHandler implements UserInputHandler {
 
@@ -15,14 +18,9 @@ public class ChatGptHandler implements UserInputHandler {
     public void handle(Long chatId, String input, InfoBot bot) {
         String response = chatGptService.getResponse(input);
 
-        Integer messageId = bot.getPendingMessageId(chatId);
-        if (messageId != null) {
-            bot.editMessageWithBack(chatId, messageId, response);
-            bot.clearPendingMessage(chatId);
-        } else {
-            bot.sendMessage(chatId, response);
-        }
+        bot.sendMessageWithBack(chatId, response);
 
         bot.clearUserState(chatId);
     }
+
 }

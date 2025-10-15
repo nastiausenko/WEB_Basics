@@ -31,7 +31,6 @@ public class InfoBot extends TelegramLongPollingBot {
     private final ChatGptServiceGroq chatGptServiceGroq;
 
     private final Map<Long, Query> userStates = new ConcurrentHashMap<>();
-    private final Map<Long, Integer> pendingMessages = new ConcurrentHashMap<>();
 
     private final Map<Query, UserInputHandler> handlers;
 
@@ -111,11 +110,10 @@ public class InfoBot extends TelegramLongPollingBot {
 
     private void handleStudentQuery(CallbackQuery cq) {
         long chatId = cq.getMessage().getChatId();
-        int messageId = cq.getMessage().getMessageId();
         if (studentService.hasStudentData(chatId)) {
-            editMessageWithBack(chatId, messageId, studentService.getStudent(chatId).toString());
+            editMessageWithBack(cq, studentService.getStudent(chatId).toString());
         } else {
-            editMessageWithBack(chatId, messageId, "Будь ласка, введіть своє ім'я та групу у форматі:\nПрізвище І.П., Група");
+            editMessageWithBack(cq, "Будь ласка, введіть своє ім'я та групу у форматі:\nПрізвище І.П., Група");
             userStates.put(chatId, Query.STUDENT);
         }
     }
@@ -131,33 +129,29 @@ public class InfoBot extends TelegramLongPollingBot {
 
     private void handleItQuery(CallbackQuery cq) {
         long chatId = cq.getMessage().getChatId();
-        int messageId = cq.getMessage().getMessageId();
         if (itService.hasTechnologies(chatId)) {
             List<String> techs = itService.getTechnologies(chatId);
-            editMessageWithBack(chatId, messageId, "IT-технології:\n" + String.join(", ", techs));
+            editMessageWithBack(cq, "IT-технології:\n" + String.join(", ", techs));
         } else {
-            editMessageWithBack(chatId, messageId, "Введіть IT-технології через кому (наприклад: Java, Spring, Docker)");
+            editMessageWithBack(cq, "Введіть IT-технології через кому (наприклад: Java, Spring, Docker)");
             userStates.put(chatId, Query.IT);
         }
     }
 
     private void handleContactsQuery(CallbackQuery cq) {
         long chatId = cq.getMessage().getChatId();
-        int messageId = cq.getMessage().getMessageId();
         if (contactService.hasContactsData(chatId)) {
-            editMessageWithBack(chatId, messageId, contactService.getContacts(chatId).toString());
+            editMessageWithBack(cq, contactService.getContacts(chatId).toString());
         } else {
-            editMessageWithBack(chatId, messageId, "Будь ласка, введіть телефон та пошту у форматі:\n050-555-55-55, email@example.com");
+            editMessageWithBack(cq, "Будь ласка, введіть телефон та пошту у форматі:\n050-555-55-55, email@example.com");
             userStates.put(chatId, Query.CONTACTS);
         }
     }
 
     private void handleChatGptQuery(CallbackQuery cq) {
         long chatId = cq.getMessage().getChatId();
-        int messageId = cq.getMessage().getMessageId();
-        editMessageWithBack(chatId, messageId, "Введіть ваш запит для ChatGPT:");
+        editMessageWithBack(cq, "Введіть ваш запит для ChatGPT:");
         userStates.put(chatId, Query.CHATGPT);
-        pendingMessages.put(chatId, messageId);
     }
 
     public void sendMainMenu(Long chatId, String text) {
@@ -203,7 +197,10 @@ public class InfoBot extends TelegramLongPollingBot {
         }
     }
 
-    public void editMessageWithBack(Long chatId, Integer messageId, String text) {
+    public void editMessageWithBack(CallbackQuery cq, String text) {
+        long chatId = cq.getMessage().getChatId();
+        int messageId = cq.getMessage().getMessageId();
+
         EditMessageText editMessage = EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(messageId)
@@ -217,6 +214,18 @@ public class InfoBot extends TelegramLongPollingBot {
         }
     }
 
+    public void sendMessageWithBack(Long chatId, String text) {
+        SendMessage editMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .replyMarkup(buildBackButton())
+                .build();
+        try {
+            execute(editMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
     private InlineKeyboardMarkup buildBackButton() {
         InlineKeyboardButton backButton = InlineKeyboardButton.builder()
                 .text("⬅️ Back")
@@ -238,13 +247,5 @@ public class InfoBot extends TelegramLongPollingBot {
 
     public void clearUserState(Long chatId) {
         userStates.remove(chatId);
-    }
-
-    public Integer getPendingMessageId(Long chatId) {
-        return pendingMessages.get(chatId);
-    }
-
-    public void clearPendingMessage(Long chatId) {
-        pendingMessages.remove(chatId);
     }
 }
