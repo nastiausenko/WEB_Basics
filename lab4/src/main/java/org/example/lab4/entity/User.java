@@ -7,10 +7,11 @@ import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.List;
 
-@Document(collation = "users")
+@Document(collection = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -22,5 +23,7 @@ public class User {
     private String email;
     private String username;
     private String password;
-    private List<String> roles;
+
+    @DocumentReference
+    private List<Post> posts;
 }
