@@ -13,7 +13,7 @@ repositories {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'org.example.lab.TelegramBot'
+                'Main-Class': 'org.example.lab.BotServer'
         )
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
