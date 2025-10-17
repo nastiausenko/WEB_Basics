@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Увійти</title>
+    <link rel="stylesheet" href="/register.css">
+</head>
+<body>
+<div class="login-container">
+    <h2>Увійти</h2>
+    <form id="loginForm">
+        <input type="email" name="email" placeholder="Email" required>
+        <span id="emailError" class="error"></span>
+
+        <input type="password" name="password" placeholder="Пароль" required>
+        <span id="passwordError" class="error"></span>
+
+        <button type="submit">Увійти</button>
+    </form>
+    <p>Ще немає акаунту? <a href="/api/v2/register">Зареєструватися</a></p>
+</div>
+
+<script>
+    const form = document.getElementById('loginForm');
+
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+
+        document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+        const formData = {
+            email: form.email.value,
+            password: form.password.value
+        };
+
+        try {
+            const res = await fetch('/api/v1/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+
+                localStorage.setItem('token', data.token);
+
+                alert('Вхід пройшов успішно!');
+                window.location.href = '/api/v2/home';
+            } else {
+                const err = await res.json();
+                if (err.message.includes('email')) document.getElementById('emailError').textContent = err.message;
+                else if (err.message.includes('password')) document.getElementById('passwordError').textContent = err.message;
+                else alert(err.message || 'Помилка при вході');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Сталася помилка при підключенні до сервера.');
+        }
+    });
+</script>
+</body>
+</html>

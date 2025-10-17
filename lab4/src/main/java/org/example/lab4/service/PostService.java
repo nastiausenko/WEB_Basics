@@ -3,11 +3,13 @@ package org.example.lab4.service;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.example.lab4.entity.Post;
+import org.example.lab4.entity.PostWithUser;
 import org.example.lab4.entity.User;
 import org.example.lab4.repository.PostRepository;
 import org.example.lab4.repository.UserRepository;
 import org.example.lab4.security.AccessValidator;
 import org.example.lab4.service.exceptions.UserNotFoundException;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,8 +29,8 @@ public class PostService {
         return postRepository.findAllByUserId(user.getId());
     }
 
-    public List<Post> getPublicPosts() {
-        return postRepository.findAllByIsPublic(true);
+    public List<PostWithUser> getPublicPosts() {
+        return postRepository.findPublicPostsWithUsername();
     }
 
     public Post getPostById(ObjectId id) {
@@ -60,6 +62,7 @@ public class PostService {
         boolean isPublic = post.getIsPublic();
         post.setIsPublic(!isPublic);
         postRepository.save(post);
+        return post;
     }
 
     public Post update(ObjectId postId, Post request) {
@@ -71,7 +74,7 @@ public class PostService {
 
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
-        post.setPublic(request.isPublic());
+        post.setIsPublic(request.getIsPublic());
         post.setCreatedAt(LocalDateTime.now());
 
         return postRepository.save(post);

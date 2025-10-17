@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Пости</title>
+    <link rel="stylesheet" href="/home.css">
+</head>
+<body>
+
+<div class="header">
+    <div><a href="/api/v2/home">Home</a></div>
+    <div id="username">Username</div>
+</div>
+
+<div class="container" id="postsContainer">
+
+</div>
+
+<script>
+    async function loadPosts() {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch('/api/v1/posts/public', {
+                method: 'GET',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (!res.ok) throw new Error('Не вдалося завантажити пости');
+            const posts = await res.json();
+            const container = document.getElementById('postsContainer');
+            container.innerHTML = '';
+            posts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
+          <div class="post-header">
+            <span>${new Date(post.createdAt).toLocaleString()}</span>
+            <span>${post.username || 'Unknown'}</span>
+          </div>
+          <div class="post-title">${post.title}</div>
+          <div class="post-content">${post.content}</div>
+        `;
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Сталася помилка при завантаженні постів');
+        }
+    }
+
+    loadPosts();
+
+    const usernameEl = document.getElementById('username');
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) usernameEl.textContent = storedUsername;
+</script>
+
+</body>
+</html>
