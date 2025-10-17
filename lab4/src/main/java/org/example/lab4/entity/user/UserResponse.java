@@ -1,4 +1,4 @@
-package org.example.lab4.entity;
+package org.example.lab4.entity.user;
 
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;

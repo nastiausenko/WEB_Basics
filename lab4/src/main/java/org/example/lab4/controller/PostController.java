@@ -2,8 +2,8 @@ package org.example.lab4.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.example.lab4.entity.Post;
-import org.example.lab4.entity.PostWithUser;
+import org.example.lab4.entity.post.Post;
+import org.example.lab4.entity.post.PostWithUser;
 import org.example.lab4.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -2,9 +2,9 @@ package org.example.lab4.service;
 
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.example.lab4.entity.Post;
-import org.example.lab4.entity.PostWithUser;
-import org.example.lab4.entity.User;
+import org.example.lab4.entity.post.Post;
+import org.example.lab4.entity.post.PostWithUser;
+import org.example.lab4.entity.user.User;
 import org.example.lab4.repository.PostRepository;
 import org.example.lab4.repository.UserRepository;
 import org.example.lab4.security.AccessValidator;
@@ -39,6 +39,7 @@ public class PostService {
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
+                .isPublic(request.getIsPublic())
                 .createdAt(LocalDateTime.now())
                 .userId(user.getId())
                 .build();

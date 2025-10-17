@@ -1,4 +1,4 @@
-package org.example.lab4.entity;
+package org.example.lab4.entity.post;
 
 import lombok.Data;
 import java.time.LocalDateTime;

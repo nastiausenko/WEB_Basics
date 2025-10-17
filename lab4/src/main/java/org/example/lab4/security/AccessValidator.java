@@ -2,7 +2,7 @@ package org.example.lab4.security;
 
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.example.lab4.entity.User;
+import org.example.lab4.entity.user.User;
 import org.example.lab4.repository.UserRepository;
 import org.example.lab4.service.exceptions.ForbiddenException;
 import org.example.lab4.service.exceptions.UserNotFoundException;
