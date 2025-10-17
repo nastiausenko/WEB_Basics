@@ -1,47 +1,54 @@
 package org.example.lab4.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lab4.entity.AuthRequest;
-import org.example.lab4.entity.AuthResponse;
+import org.example.lab4.entity.auth.AuthRequest;
+import org.example.lab4.entity.auth.AuthResponse;
 import org.example.lab4.entity.User;
 import org.example.lab4.repository.UserRepository;
+import org.example.lab4.security.jwt.JwtUtil;
+import org.example.lab4.service.exceptions.EmailAlreadyExistsException;
+import org.example.lab4.service.exceptions.UserNotFoundException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
 
-    public String register(AuthRequest request) {
-
-        if (userRepository.findByEmail(request.getEmail()) != null) {
-            throw new RuntimeException("User with email " + request.getEmail() + " already exists");
+    public AuthResponse register(AuthRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
-        if (userRepository.findByUsername(request.getUsername()) != null) {
-            throw new RuntimeException("Username " + request.getUsername() + " already exists");
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new EmailAlreadyExistsException(request.getUsername());//TODO Username Exception
         }
 
         User user = User.builder()
                 .email(request.getEmail())
                 .username(request.getUsername())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .build();
+
         userRepository.save(user);
-        return "OK";
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+        return AuthResponse.builder().token(token).build();
     }
 
-    public User login(AuthRequest request) {
-        User user = userRepository.findByEmail(request.getEmail());
+    public AuthResponse login(AuthRequest request) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                request.getEmail(), request.getPassword()
+        ));
 
-        if (user == null) {
-            throw new RuntimeException("User with email " + request.getEmail() + " does not exist");
-        }
-
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Bad Credentials");
-        }
-
-        return user;
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UserNotFoundException(request.getEmail()));
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+        return AuthResponse.builder().token(token).build();
     }
 }
