@@ -19,9 +19,9 @@ public class Post {
     @Id
     private ObjectId id;
 
-    private String userId;
+    private ObjectId userId;
     private String title;
     private String content;
-    private boolean isPublic;
+    private Boolean isPublic;
     private LocalDateTime createdAt = LocalDateTime.now();
 }
