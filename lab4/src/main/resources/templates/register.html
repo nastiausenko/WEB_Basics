@@ -37,7 +37,7 @@
     };
 
     try {
-      const res = await fetch('/api/v1/register', {
+      const res = await fetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -45,7 +45,6 @@
 
       if (res.ok) {
         const data = await res.json();
-        alert('Реєстрація пройшла успішно!');
         localStorage.setItem('token', data.token);
         window.location.href = '/api/v2/home';
       } else {

@@ -86,3 +86,47 @@ body {
     background: #7d8995;
     color: #fff;
 }
+
+.user-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.username {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #fff;
+    min-width: 150px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    z-index: 10;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.dropdown a, .dropdown button {
+    display: block;
+    padding: 10px 15px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.dropdown a:hover, .dropdown button:hover {
+    background-color: #f3f3f3;
+}
+
+.show {
+    display: block;
+}
