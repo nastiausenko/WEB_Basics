@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Додати пост</title>
+  <link rel="stylesheet" href="/home.css">
+</head>
+<body>
+
+<!-- Хедер -->
+<div th:replace="fragments/header :: siteHeader"></div>
+
+<div class="post-form-wrapper">
+  <div class="post-form-container">
+    <h2>Додати новий пост</h2>
+    <form id="addPostForm" class="post-form">
+      <label for="title">Заголовок:</label>
+      <input type="text" id="title" name="title" required>
+
+      <label for="content">Вміст:</label>
+      <textarea id="content" name="content" rows="6" required></textarea>
+
+      <label for="isPublic">
+        <input type="checkbox" id="isPublic" name="isPublic">
+        Опублікувати публічно
+      </label>
+
+      <button type="submit" class="signup-btn">Додати пост</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('addPostForm');
+    const token = localStorage.getItem('token');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const title = form.title.value.trim();
+      const content = form.content.value.trim();
+      const isPublic = form.isPublic.checked;
+
+      if (!title || !content) {
+        alert('Будь ласка, заповніть всі поля');
+        return;
+      }
+
+      const postData = { title, content, isPublic };
+
+      try {
+        const res = await fetch('/api/v1/posts/add-post', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postData)
+        });
+
+        if (!res.ok) throw new Error('Не вдалося додати пост');
+
+        alert('Пост додано успішно!');
+        window.location.href = '/api/v2/posts';
+      } catch (err) {
+        console.error(err);
+        alert('Помилка при додаванні посту');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
