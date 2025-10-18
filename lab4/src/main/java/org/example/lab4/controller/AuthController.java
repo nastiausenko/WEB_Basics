@@ -2,10 +2,10 @@ package org.example.lab4.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.lab4.entity.user.User;
-import org.example.lab4.entity.user.UserResponse;
 import org.example.lab4.entity.auth.AuthRequest;
 import org.example.lab4.entity.auth.AuthResponse;
+import org.example.lab4.entity.user.User;
+import org.example.lab4.entity.user.UserResponse;
 import org.example.lab4.security.AccessValidator;
 import org.example.lab4.service.AuthService;
 import org.springframework.http.ResponseEntity;

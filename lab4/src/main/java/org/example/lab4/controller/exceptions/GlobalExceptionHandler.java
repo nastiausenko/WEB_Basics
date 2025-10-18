@@ -18,7 +18,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.example.lab4.controller.exceptions.ProblemDetailsUtils.getValidationErrorsProblemDetail;
