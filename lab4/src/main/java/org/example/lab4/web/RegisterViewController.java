@@ -32,4 +32,9 @@ public class RegisterViewController {
     public String addPostPage() {
         return "add_post";
     }
+
+    @GetMapping("/edit")
+    public String editPostPage() {
+        return "edit_post";
+    }
 }
