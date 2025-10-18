@@ -7,13 +7,12 @@
 </head>
 <body>
 
-
 <div th:replace="fragments/header :: siteHeader"></div>
 
 <div class="container">
   <div class="posts-header">
-    <h2>Мої пости</h2>
-    <button id="addPostBtn" class="signup-btn">+ Add Post</button>
+    <h2>My posts</h2>
+    <button id="addPostBtn" class="add-btn">+ Add Post</button>
   </div>
 
   <div id="postsContainer"></div>
@@ -35,19 +34,21 @@
       container.innerHTML = '';
 
       posts.forEach(post => {
+        const statusEmoji = post.isPublic ? '🔓' : '🔒';
+
         const card = document.createElement('div');
         card.className = 'post-card';
         card.innerHTML = `
-                    <div class="post-header">
-                        <span>${new Date(post.createdAt).toLocaleString()}</span>
-                        <div>
-                            <button class="edit-btn" data-id="${post.id}">✏️</button>
-                            <button class="delete-btn" data-id="${post.id}">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="post-title">${post.title}</div>
-                    <div class="post-content">${post.content}</div>
-                `;
+          <div class="post-header">
+              <span>${new Date(post.createdAt).toLocaleString()}</span>
+              <div>
+                  <button class="edit-btn" data-id="${post.id}">🖊︎️</button>
+                  <button class="delete-btn" data-id="${post.id}">🗑️</button>
+              </div>
+          </div>
+          <div class="post-title">${statusEmoji} ${post.title}</div>
+          <div class="post-content">${post.content}</div>
+        `;
         container.appendChild(card);
       });
 
@@ -71,24 +72,7 @@
 
   // ====== Edit post ======
   async function editPost(id) {
-    const title = prompt('Новий заголовок:');
-    const content = prompt('Новий вміст:');
-    if (!title || !content) return;
-
-    try {
-      const res = await fetch(`/api/v1/posts/${id}/edit`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ title, content, isPublic: true })
-      });
-      if (!res.ok) throw new Error('Не вдалося оновити пост');
-      await loadUserPosts();
-    } catch (err) {
-      alert('Помилка при оновленні посту.');
-    }
+    window.location.href = `/api/v2/edit?id=${id}`;
   }
 
   // ====== Delete post ======
@@ -104,13 +88,6 @@
         await loadUserPosts();
       } else {
         alert('Не вдалося видалити пост.');
-      }
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error('Delete error:', res.status, text);
-        alert(`Помилка при видаленні посту (${res.status})`);
-        return;
       }
 
     } catch (err) {

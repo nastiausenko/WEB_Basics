@@ -72,17 +72,22 @@ body {
     }
 }
 
-.signup-btn {
-    background: #fff;
-    color: #9AA6B2;
-    padding: 8px 14px;
-    border-radius: 10px;
+.add-btn {
+    padding: 12px;
     text-decoration: none;
+    background: #9AA6B2;
+    color: #fff;
     font-weight: bold;
-    transition: background 0.3s, color 0.3s;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+    transition: background 0.3s, transform 0.1s;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
 }
 
-.signup-btn:hover {
+.add-btn:hover {
     background: #7d8995;
     color: #fff;
 }
@@ -95,6 +100,11 @@ body {
 .username {
     cursor: pointer;
     font-weight: bold;
+    transition: opacity 0.3s;
+}
+
+.username:hover {
+    opacity: 0.8;
 }
 
 .dropdown {
