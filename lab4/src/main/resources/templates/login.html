@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="/register.css">
+</head>
+<body>
+<div class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <div class="field-container">
+            <input type="email" name="email" placeholder="Email" required>
+            <span id="emailError" class="error"></span>
+        </div>
+
+        <div class="field-container">
+            <input type="password" name="password" placeholder="Пароль" required>
+            <span id="passwordError" class="error"></span>
+        </div>
+
+        <button type="submit">Log In</button>
+    </form>
+    <p>Don't have an account? <a href="/api/v2/auth/register">Sign Up</a></p>
+</div>
+
+<script>
+    const form = document.getElementById('loginForm');
+
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+
+        document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+        const formData = {
+            email: form.email.value,
+            password: form.password.value
+        };
+
+        try {
+            const res = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+
+                localStorage.setItem('token', data.token);
+
+                window.location.href = '/api/v2/posts/public';
+            } else {
+                const err = await res.json();
+
+                if (err.type?.includes('email') || err.detail?.toLowerCase().includes('email')) {
+                    document.getElementById('emailError').textContent = err.detail;
+                } else if (err.detail?.toLowerCase().includes('password')) {
+                    document.getElementById('passwordError').textContent = err.detail;
+                } else {
+                    alert(err.detail || 'Помилка при реєстрації');
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Сталася помилка при підключенні до сервера.');
+        }
+    });
+</script>
+</body>
+</html>

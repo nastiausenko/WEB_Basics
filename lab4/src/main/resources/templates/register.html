@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Registration</title>
+  <link rel="stylesheet" href="/register.css">
+</head>
+<body>
+<div class="login-container">
+  <form id="registerForm">
+    <h2>Sign Up</h2>
+    <div class="field-container">
+      <input name="username" placeholder="Username" required>
+      <span id="usernameError" class="error"></span>
+    </div>
+
+    <div class="field-container">
+      <input type="email" name="email" placeholder="Email" required>
+      <span id="emailError" class="error"></span>
+    </div>
+
+    <div class="field-container">
+      <input type="password" name="password" placeholder="Password" required>
+      <span id="passwordError" class="error"></span>
+    </div>
+
+    <button type="submit">Sign Up</button>
+  </form>
+  <p>Have an account? <a href="/api/v2/auth/login">Log In</a></p>
+</div>
+
+<script>
+  const form = document.getElementById('registerForm');
+
+  function clearErrors() {
+    document.querySelectorAll('.error').forEach(el => el.textContent = '');
+  }
+
+  function showError(field, message) {
+    const el = document.getElementById(field + 'Error');
+    if (el) el.textContent = message;
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    clearErrors();
+
+    const formData = {
+      username: form.username.value.trim(),
+      email: form.email.value.trim(),
+      password: form.password.value.trim()
+    };
+
+    try {
+      const res = await fetch('/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('token', data.token);
+        window.location.href = '/api/v2/posts/public';
+        return;
+      }
+
+      const err = await res.json();
+
+      if (err.type?.includes('username') || err.detail?.toLowerCase().includes('username')) {
+        showError('username', err.detail);
+      }
+      if (err.type?.includes('email') || err.detail?.toLowerCase().includes('email')) {
+        showError('email', err.detail);
+      }
+      if (err.invalidParams && Array.isArray(err.invalidParams)) {
+        err.invalidParams.forEach(v => {
+          if (v.fieldName === 'password') showError('password', v.reason);
+        });
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert('Сталася помилка при підключенні до сервера.');
+    }
+  });
+</script>
+</body>
+</html>

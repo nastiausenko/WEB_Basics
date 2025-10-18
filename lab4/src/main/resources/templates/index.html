@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Posts</title>
+    <link rel="stylesheet" href="/home.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: siteHeader}"></div>
+
+<div class="container" id="postsContainer">
+
+</div>
+
+<script>
+  async function loadPosts() {
+        try {
+            const res = await fetch('/api/v1/posts/public');
+            if (!res.ok) throw new Error('Не вдалося завантажити пости');
+
+            const posts = await res.json();
+            const container = document.getElementById('postsContainer');
+            container.innerHTML = '';
+
+            posts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
+                <div class="post-header">
+                    <span>${new Date(post.createdAt).toLocaleString()}</span>
+                    <span>${post.username || 'Unknown'}</span>
+                </div>
+                <div class="post-title">${post.title}</div>
+                <div class="post-content">${post.content}</div>
+            `;
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Сталася помилка при завантаженні постів');
+        }
+    }
+    loadPosts();
+</script>
+
+</body>
+</html>

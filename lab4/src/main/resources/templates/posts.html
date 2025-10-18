@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>My Posts</title>
+  <link rel="stylesheet" href="/home.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: siteHeader}"></div>
+
+<div class="container">
+  <div class="posts-header">
+    <h2>My posts</h2>
+    <button id="addPostBtn" class="add-btn">+ Add Post</button>
+  </div>
+
+  <div id="postsContainer"></div>
+</div>
+
+<script>
+  const token = localStorage.getItem('token');
+
+  async function loadUserPosts() {
+    try {
+      const res = await fetch('/api/v1/posts/user-posts', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Не вдалося завантажити пости');
+      const posts = await res.json();
+
+      const container = document.getElementById('postsContainer');
+      container.innerHTML = '';
+
+      posts.forEach(post => {
+        const statusEmoji = post.isPublic ? '🔓' : '🔒';
+
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        card.innerHTML = `
+          <div class="post-header">
+              <span>${new Date(post.createdAt).toLocaleString()}</span>
+              <div>
+                  <button class="edit-btn" data-id="${post.id}">🖊︎️</button>
+                  <button class="delete-btn" data-id="${post.id}">🗑️</button>
+              </div>
+          </div>
+          <div class="post-title">${statusEmoji} ${post.title}</div>
+          <div class="post-content">${post.content}</div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.querySelectorAll('.edit-btn').forEach(btn =>
+              btn.addEventListener('click', () => editPost(btn.dataset.id))
+      );
+      document.querySelectorAll('.delete-btn').forEach(btn =>
+              btn.addEventListener('click', () => deletePost(btn.dataset.id))
+      );
+
+    } catch (err) {
+      console.error(err);
+      alert('Помилка при завантаженні постів.');
+    }
+  }
+
+  // ====== Add post ======
+  document.getElementById('addPostBtn').addEventListener('click', async () => {
+    window.location.href = '/api/v2/posts/add-post';
+  });
+
+  // ====== Edit post ======
+  async function editPost(id) {
+    window.location.href = `/api/v2/posts/edit-post?id=${id}`;
+  }
+
+  // ====== Delete post ======
+  async function deletePost(postId) {
+    if (!confirm('Видалити цей пост?')) return;
+
+    try {
+      const res = await fetch(`/api/v1/posts/${postId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        await loadUserPosts();
+      } else {
+        alert('Не вдалося видалити пост.');
+      }
+
+    } catch (err) {
+      alert('Помилка при видаленні посту.');
+    }
+  }
+
+  loadUserPosts();
+</script>
+
+</body>
+</html>

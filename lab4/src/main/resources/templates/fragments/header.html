@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+
+<div th:fragment="siteHeader">
+  <div class="header">
+    <div><a href="/api/v2/posts/public">Home</a></div>
+    <div id="userSection"></div>
+  </div>
+
+  <script th:inline="javascript">
+    async function loadUser() {
+      const token = localStorage.getItem('token');
+      const userSection = document.getElementById('userSection');
+
+      if (!token) {
+        userSection.innerHTML = `<a href="/api/v2/auth/register" class="signup-btn">Sign up</a>`;
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/v1/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          const user = await res.json();
+          userSection.innerHTML = `
+                        <div class="user-menu">
+                            <span class="username">${user.username}</span>
+                            <div class="dropdown" id="userDropdown">
+                                <button id="myPostsBtn" class="dropdown-item">My posts</button>
+                                <button id="logoutBtn">Logout</button>
+                            </div>
+                        </div>
+                    `;
+
+          const usernameEl = document.querySelector('.username');
+          const dropdown = document.getElementById('userDropdown');
+          usernameEl.addEventListener('click', () => dropdown.classList.toggle('show'));
+
+          document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu')) {
+              dropdown.classList.remove('show');
+            }
+          });
+
+          document.getElementById('myPostsBtn').addEventListener('click', () => {
+            window.location.href = '/api/v2/posts/user-posts';
+          });
+
+          document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/api/v2/posts/public';
+          });
+
+        } else {
+          localStorage.removeItem('token');
+          userSection.innerHTML = `<a href="/api/v2/auth/register" class="signup-btn">Sign up</a>`;
+        }
+      } catch (e) {
+        console.error(e);
+        userSection.innerHTML = `<a href="/api/v2/auth/register" class="signup-btn">Sign up</a>`;
+      }
+    }
+
+    loadUser();
+  </script>
+</div>
+</body>
+</html>

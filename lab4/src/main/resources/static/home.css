@@ -1,0 +1,225 @@
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #D9EAFD, #9AA6B2);
+}
+
+.header {
+    background: #9AA6B2;
+    color: #fff;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.header a {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 15px;
+    font-weight: bold;
+    transition: opacity 0.3s;
+}
+
+.header a:hover {
+    opacity: 0.8;
+}
+
+.container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.post-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.post-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.post-content {
+    font-size: 1rem;
+    color: #444;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.add-btn {
+    padding: 12px;
+    text-decoration: none;
+    background: #9AA6B2;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+    transition: background 0.3s, transform 0.1s;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+.add-btn:hover {
+    background: #7d8995;
+    color: #fff;
+}
+
+.user-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.username {
+    cursor: pointer;
+    font-weight: bold;
+    transition: opacity 0.3s;
+}
+
+.username:hover {
+    opacity: 0.8;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #fff;
+    min-width: 150px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    z-index: 10;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.dropdown a, .dropdown button {
+    display: block;
+    padding: 10px 15px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.dropdown a:hover, .dropdown button:hover {
+    background-color: #f3f3f3;
+}
+
+.show {
+    display: block;
+}
+
+.post-form-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 70px);
+    box-sizing: border-box;
+    background: linear-gradient(135deg, #D9EAFD, #9AA6B2);
+    padding: 0 20px;
+}
+
+/* Контейнер форми */
+.post-form-container {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    width: 360px;
+    max-height: 100%;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.post-form-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.post-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.post-form input[type="text"],
+.post-form textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.post-form input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.post-form button.signup-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #9AA6B2;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.post-form button.signup-btn:hover {
+    background-color: #7d8995;
+}
+
+
+
+.posts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: nowrap;
+}
+
+.posts-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.posts-header button#addPostBtn {
+    flex-shrink: 0;
+}

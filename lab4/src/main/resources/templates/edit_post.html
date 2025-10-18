@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Post</title>
+  <link rel="stylesheet" href="/home.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: siteHeader}"></div>
+
+<div class="post-form-wrapper">
+  <div class="post-form-container">
+    <h2>Edit post</h2>
+    <form id="editPostForm" class="post-form">
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" required>
+
+      <label for="content">Content:</label>
+      <textarea id="content" name="content" rows="6" required></textarea>
+
+      <label for="isPublic">
+        <input type="checkbox" id="isPublic" name="isPublic">
+        Make it public
+      </label>
+
+      <button type="submit" class="signup-btn">Save</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const form = document.getElementById('editPostForm');
+    const token = localStorage.getItem('token');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('id');
+    if (!postId) {
+      alert('Невідомий пост');
+      window.location.href = '/api/v2/posts/user-posts';
+      return;
+    }
+
+    // ===== Завантаження даних поста =====
+    try {
+      const res = await fetch(`/api/v1/posts/${postId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Не вдалося завантажити пост');
+
+      const post = await res.json();
+      form.title.value = post.title;
+      form.content.value = post.content;
+      form.isPublic.checked = post.isPublic;
+    } catch (err) {
+      console.error(err);
+      alert('Помилка при завантаженні посту');
+      window.location.href = '/api/v2/posts/user-posts';
+      return;
+    }
+
+    // ===== Збереження змін =====
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const title = form.title.value.trim();
+      const content = form.content.value.trim();
+      const isPublic = form.isPublic.checked;
+
+      if (!title || !content) {
+        alert('Будь ласка, заповніть всі поля');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/v1/posts/${postId}/edit`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ title, content, isPublic })
+        });
+
+        if (!res.ok) throw new Error('Не вдалося оновити пост');
+
+        window.location.href = '/api/v2/posts/user-posts';
+      } catch (err) {
+        console.error(err);
+        alert('Помилка при оновленні посту');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
