@@ -2,12 +2,12 @@
 <html lang="uk" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Додати пост</title>
+  <title>Add Post</title>
   <link rel="stylesheet" href="/home.css">
 </head>
 <body>
 
-<div th:replace="fragments/header :: siteHeader"></div>
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
 <div class="post-form-wrapper">
   <div class="post-form-container">
@@ -60,7 +60,7 @@
 
         if (!res.ok) throw new Error('Не вдалося додати пост');
 
-        window.location.href = '/api/v2/posts';
+        window.location.href = '/api/v2/posts/user-posts';
       } catch (err) {
         console.error(err);
         alert('Помилка при додаванні посту');

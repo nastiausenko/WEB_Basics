@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/api/v2")
+@RequestMapping("/api/v2/auth")
 public class RegisterViewController {
 
     @GetMapping("/register")
@@ -16,25 +16,5 @@ public class RegisterViewController {
     @GetMapping("/login")
     public String loginPage() {
         return "login";
-    }
-
-    @GetMapping("/home")
-    public String homePage() {
-        return "index";
-    }
-
-    @GetMapping("/posts")
-    public String postsPage() {
-        return "posts";
-    }
-
-    @GetMapping("/add-post")
-    public String addPostPage() {
-        return "add_post";
-    }
-
-    @GetMapping("/edit")
-    public String editPostPage() {
-        return "edit_post";
     }
 }

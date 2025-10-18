@@ -7,7 +7,7 @@
 
 <div th:fragment="siteHeader">
   <div class="header">
-    <div><a href="/api/v2/home">Home</a></div>
+    <div><a href="/api/v2/posts/public">Home</a></div>
     <div id="userSection"></div>
   </div>
 
@@ -17,7 +17,7 @@
       const userSection = document.getElementById('userSection');
 
       if (!token) {
-        userSection.innerHTML = `<a href="/api/v2/register" class="signup-btn">Sign up</a>`;
+        userSection.innerHTML = `<a href="/api/v2/auth/register" class="signup-btn">Sign up</a>`;
         return;
       }
 
@@ -49,21 +49,21 @@
           });
 
           document.getElementById('myPostsBtn').addEventListener('click', () => {
-            window.location.href = '/api/v2/posts';
+            window.location.href = '/api/v2/posts/user-posts';
           });
 
           document.getElementById('logoutBtn').addEventListener('click', () => {
             localStorage.removeItem('token');
-            window.location.href = '/api/v2/home';
+            window.location.href = '/api/v2/posts/public';
           });
 
         } else {
           localStorage.removeItem('token');
-          userSection.innerHTML = `<a href="/api/v2/register" class="signup-btn">Sign up</a>`;
+          userSection.innerHTML = `<a href="/api/v2/auth/register" class="signup-btn">Sign up</a>`;
         }
       } catch (e) {
         console.error(e);
-        userSection.innerHTML = `<a href="/api/v2/register" class="signup-btn">Sign up</a>`;
+        userSection.innerHTML = `<a href="/api/v2/auth/register" class="signup-btn">Sign up</a>`;
       }
     }
 

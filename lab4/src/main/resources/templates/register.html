@@ -26,7 +26,7 @@
 
     <button type="submit">Sign Up</button>
   </form>
-  <p>Have an account? <a href="/api/v2/login">Log In</a></p>
+  <p>Have an account? <a href="/api/v2/auth/login">Log In</a></p>
 </div>
 
 <script>
@@ -61,7 +61,7 @@
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem('token', data.token);
-        window.location.href = '/api/v2/home';
+        window.location.href = '/api/v2/posts/public';
         return;
       }
 

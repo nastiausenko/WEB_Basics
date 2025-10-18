@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<div th:replace="fragments/header :: siteHeader"></div>
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
 <div class="container">
   <div class="posts-header">
@@ -67,12 +67,12 @@
 
   // ====== Add post ======
   document.getElementById('addPostBtn').addEventListener('click', async () => {
-    window.location.href = '/api/v2/add-post';
+    window.location.href = '/api/v2/posts/add-post';
   });
 
   // ====== Edit post ======
   async function editPost(id) {
-    window.location.href = `/api/v2/edit?id=${id}`;
+    window.location.href = `/api/v2/posts/edit-post?id=${id}`;
   }
 
   // ====== Delete post ======
