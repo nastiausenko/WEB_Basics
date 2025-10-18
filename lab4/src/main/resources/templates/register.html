@@ -2,38 +2,53 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>Реєстрація</title>
+  <title>Registration</title>
   <link rel="stylesheet" href="/register.css">
 </head>
 <body>
 <div class="login-container">
   <form id="registerForm">
-    <input name="username" placeholder="Твоє ім'я" required>
-    <span id="usernameError" class="error"></span>
+    <h2>Sign Up</h2>
+    <div class="field-container">
+      <input name="username" placeholder="Username" required>
+      <span id="usernameError" class="error"></span>
+    </div>
 
-    <input type="email" name="email" placeholder="Email" required>
-    <span id="emailError" class="error"></span>
+    <div class="field-container">
+      <input type="email" name="email" placeholder="Email" required>
+      <span id="emailError" class="error"></span>
+    </div>
 
-    <input type="password" name="password" placeholder="Пароль" required>
-    <span id="passwordError" class="error"></span>
+    <div class="field-container">
+      <input type="password" name="password" placeholder="Password" required>
+      <span id="passwordError" class="error"></span>
+    </div>
 
-    <button type="submit">Зареєструватися</button>
+    <button type="submit">Sign Up</button>
   </form>
-  <p>Вже маєш акаунт? <a href="/api/v2/login">Увійти</a></p>
+  <p>Have an account? <a href="/api/v2/login">Log In</a></p>
 </div>
 
 <script>
   const form = document.getElementById('registerForm');
 
+  function clearErrors() {
+    document.querySelectorAll('.error').forEach(el => el.textContent = '');
+  }
+
+  function showError(field, message) {
+    const el = document.getElementById(field + 'Error');
+    if (el) el.textContent = message;
+  }
+
   form.addEventListener('submit', async e => {
     e.preventDefault();
-
-    document.querySelectorAll('.error').forEach(el => el.textContent = '');
+    clearErrors();
 
     const formData = {
-      username: form.username.value,
-      email: form.email.value,
-      password: form.password.value
+      username: form.username.value.trim(),
+      email: form.email.value.trim(),
+      password: form.password.value.trim()
     };
 
     try {
@@ -47,11 +62,23 @@
         const data = await res.json();
         localStorage.setItem('token', data.token);
         window.location.href = '/api/v2/home';
-      } else {
-        const err = await res.json();
-        if (err.message.includes('email')) document.getElementById('emailError').textContent = err.message;
-        else alert(err.message || 'Помилка при реєстрації');
+        return;
       }
+
+      const err = await res.json();
+
+      if (err.type?.includes('username') || err.detail?.toLowerCase().includes('username')) {
+        showError('username', err.detail);
+      }
+      if (err.type?.includes('email') || err.detail?.toLowerCase().includes('email')) {
+        showError('email', err.detail);
+      }
+      if (err.invalidParams && Array.isArray(err.invalidParams)) {
+        err.invalidParams.forEach(v => {
+          if (v.fieldName === 'password') showError('password', v.reason);
+        });
+      }
+
     } catch (error) {
       console.error(error);
       alert('Сталася помилка при підключенні до сервера.');

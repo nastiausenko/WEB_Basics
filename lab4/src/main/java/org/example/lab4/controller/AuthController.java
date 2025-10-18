@@ -9,10 +9,12 @@ import org.example.lab4.entity.auth.AuthResponse;
 import org.example.lab4.security.AccessValidator;
 import org.example.lab4.service.AuthService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/v1/auth")
 public class AuthController {
     private final AuthService authService;
@@ -24,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid AuthRequest request) {
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 

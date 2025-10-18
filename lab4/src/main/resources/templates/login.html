@@ -2,22 +2,26 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Увійти</title>
+    <title>Login</title>
     <link rel="stylesheet" href="/register.css">
 </head>
 <body>
 <div class="login-container">
-    <h2>Увійти</h2>
+    <h2>Login</h2>
     <form id="loginForm">
-        <input type="email" name="email" placeholder="Email" required>
-        <span id="emailError" class="error"></span>
+        <div class="field-container">
+            <input type="email" name="email" placeholder="Email" required>
+            <span id="emailError" class="error"></span>
+        </div>
 
-        <input type="password" name="password" placeholder="Пароль" required>
-        <span id="passwordError" class="error"></span>
+        <div class="field-container">
+            <input type="password" name="password" placeholder="Пароль" required>
+            <span id="passwordError" class="error"></span>
+        </div>
 
-        <button type="submit">Увійти</button>
+        <button type="submit">Log In</button>
     </form>
-    <p>Ще немає акаунту? <a href="/api/v2/register">Зареєструватися</a></p>
+    <p>Don't have an account? <a href="/api/v2/register">Sign Up</a></p>
 </div>
 
 <script>
@@ -48,9 +52,14 @@
                 window.location.href = '/api/v2/home';
             } else {
                 const err = await res.json();
-                if (err.message.includes('email')) document.getElementById('emailError').textContent = err.message;
-                else if (err.message.includes('password')) document.getElementById('passwordError').textContent = err.message;
-                else alert(err.message || 'Помилка при вході');
+
+                if (err.type?.includes('email') || err.detail?.toLowerCase().includes('email')) {
+                    document.getElementById('emailError').textContent = err.detail;
+                } else if (err.detail?.toLowerCase().includes('password')) {
+                    document.getElementById('passwordError').textContent = err.detail;
+                } else {
+                    alert(err.detail || 'Помилка при реєстрації');
+                }
             }
         } catch (error) {
             console.error(error);

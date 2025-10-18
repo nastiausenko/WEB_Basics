@@ -4,6 +4,7 @@ import org.apache.tomcat.websocket.AuthenticationException;
 import org.example.lab4.service.exceptions.EmailAlreadyExistsException;
 import org.example.lab4.service.exceptions.ForbiddenException;
 import org.example.lab4.service.exceptions.UserNotFoundException;
+import org.example.lab4.service.exceptions.UsernameAlreadyExistsException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -17,6 +18,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.example.lab4.controller.exceptions.ProblemDetailsUtils.getValidationErrorsProblemDetail;
@@ -38,6 +40,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = forStatusAndDetail(BAD_REQUEST, ex.getMessage());
         problemDetail.setType(URI.create("email-already-exists"));
         problemDetail.setTitle("Email Already Exists");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    ProblemDetail handleUsernameAlreadyExistException(UsernameAlreadyExistsException ex) {
+        ProblemDetail problemDetail = forStatusAndDetail(BAD_REQUEST, ex.getMessage());
+        problemDetail.setType(URI.create("username-already-exists"));
+        problemDetail.setTitle("Username Already Exists");
         return problemDetail;
     }
 

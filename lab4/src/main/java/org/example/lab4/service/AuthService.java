@@ -8,6 +8,7 @@ import org.example.lab4.repository.UserRepository;
 import org.example.lab4.security.jwt.JwtUtil;
 import org.example.lab4.service.exceptions.EmailAlreadyExistsException;
 import org.example.lab4.service.exceptions.UserNotFoundException;
+import org.example.lab4.service.exceptions.UsernameAlreadyExistsException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,12 +24,12 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(AuthRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new EmailAlreadyExistsException(request.getEmail());
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new UsernameAlreadyExistsException(request.getUsername());
         }
 
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new EmailAlreadyExistsException(request.getUsername());//TODO Username Exception
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         User user = User.builder()

@@ -78,5 +78,8 @@ body {
 .error {
   color: red;
   font-size: 0.85rem;
-  margin-left: 5px;
+}
+
+.field-container {
+  text-align: left;
 }
