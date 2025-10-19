@@ -1,14 +1,14 @@
-package org.example.lab4.service;
+package org.example.lab5.service;
 
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.example.lab4.entity.post.Post;
-import org.example.lab4.entity.post.PostWithUser;
-import org.example.lab4.entity.user.User;
-import org.example.lab4.repository.PostRepository;
-import org.example.lab4.repository.UserRepository;
-import org.example.lab4.security.AccessValidator;
-import org.example.lab4.service.exceptions.PostNotFoundException;
+import org.example.lab5.entity.post.Post;
+import org.example.lab5.entity.post.PostWithUser;
+import org.example.lab5.entity.user.User;
+import org.example.lab5.repository.PostRepository;
+import org.example.lab5.repository.UserRepository;
+import org.example.lab5.security.AccessValidator;
+import org.example.lab5.service.exceptions.PostNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
