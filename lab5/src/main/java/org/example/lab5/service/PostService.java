@@ -3,7 +3,6 @@ package org.example.lab5.service;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.example.lab5.entity.post.Post;
-import org.example.lab5.entity.post.PostWithUser;
 import org.example.lab5.entity.user.User;
 import org.example.lab5.repository.PostRepository;
 import org.example.lab5.repository.UserRepository;
@@ -26,8 +25,8 @@ public class PostService {
         return postRepository.findAllByUserId(user.getId());
     }
 
-    public List<PostWithUser> getPublicPosts() {
-        return postRepository.findPublicPostsWithUsername();
+    public List<Post> getPublicPosts() {
+        return postRepository.findAllByIsPublic(true);
     }
 
     public Post getPostById(ObjectId id) {
@@ -64,7 +63,7 @@ public class PostService {
 
     public Post update(ObjectId postId, Post request) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new PostNotFoundException(postId));
 
         accessValidator.validateOwner(post.getUserId());
 

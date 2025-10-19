@@ -3,7 +3,6 @@ package org.example.lab5.controller;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.example.lab5.entity.post.Post;
-import org.example.lab5.entity.post.PostWithUser;
 import org.example.lab5.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,7 @@ public class PostController {
     }
 
     @GetMapping("/public")
-    public ResponseEntity<List<PostWithUser>> getPublicPosts() {
+    public ResponseEntity<List<Post>> getPublicPosts() {
         return ResponseEntity.ok(postService.getPublicPosts());
     }
 

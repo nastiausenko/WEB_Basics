@@ -5,7 +5,7 @@ import org.bson.types.ObjectId;
 
 public class UserNotFoundException extends RuntimeException {
     private static final String MESSAGE = "User with id %s not found";
-    private static final String MSG = "User not found with email %s";
+    private static final String MSG = "User %s not found";
 
     public UserNotFoundException(ObjectId id) {
         super(String.format(MESSAGE, id));
