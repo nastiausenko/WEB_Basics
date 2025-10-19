@@ -8,24 +8,10 @@ import org.example.lab5.service.exceptions.ForbiddenException;
 import org.example.lab5.service.exceptions.UserNotFoundException;
 import org.example.lab5.service.exceptions.UsernameAlreadyExistsException;
 import org.springframework.graphql.data.method.annotation.GraphQlExceptionHandler;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import java.net.URI;
-import java.util.List;
-
-import static org.example.lab5.controller.exceptions.ProblemDetailsUtils.getValidationErrorsProblemDetail;
-import static org.springframework.http.HttpStatus.*;
-import static org.springframework.http.ProblemDetail.forStatusAndDetail;
 
 @ControllerAdvice
 public class GlobalExceptionHandlerGraphQL extends ResponseEntityExceptionHandler {
