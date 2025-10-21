@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: no-auth
+
+mock:
+  user:
+    email: "mockuser@example.com"
+    username: "Mock User"

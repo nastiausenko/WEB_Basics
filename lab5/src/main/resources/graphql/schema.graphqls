@@ -1,0 +1,33 @@
+
+type Post {
+    id: ID!
+    user: User!
+    title: String!
+    content: String!
+    isPublic: Boolean!
+    createdAt: String
+}
+
+type Query {
+    posts: [Post]
+    postById(id: ID!): Post
+    myPosts: [Post]
+
+    allUsers: [User]
+    userById(id: ID!): User
+    userByUsername(username: String!): User
+    me: User
+}
+
+type User {
+    id: ID!
+    email: String!
+    username: String!
+    posts: [Post]
+}
+
+type Mutation {
+    addPost(title: String!, content: String!, isPublic: Boolean!): Post
+    updatePost(id: ID!, title: String, content: String, isPublic: Boolean): Post
+    deletePost(id: ID!): Boolean
+}
